@@ -42,10 +42,19 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/certifications', certificationRoutes);
 
-// Base route for API check
-app.get('/', (req, res) => {
-  res.json({ message: 'Developer Portfolio API is running...' });
-});
+// Serve Frontend Static Build in Production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(process.cwd(), '..', 'frontend', 'dist');
+  app.use(express.static(frontendPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+} else {
+  // Base route for API check in development
+  app.get('/', (req, res) => {
+    res.json({ message: 'Developer Portfolio API is running...' });
+  });
+}
 
 // Seed admin user on start if not already existing
 const seedAdmin = async () => {
