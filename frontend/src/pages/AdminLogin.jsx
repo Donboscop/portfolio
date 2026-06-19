@@ -71,10 +71,10 @@ const AdminLogin = () => {
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center grid-pattern py-12 px-4 sm:px-6 lg:px-8">
       {/* Background radial glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-blue-500/10 dark:bg-blue-500/15 blur-3xl"></div>
-      
+
       <div className="max-w-md w-full relative z-10">
         <div className="glass-panel p-8 sm:p-10 rounded-3xl shadow-sm text-center">
-          
+
           {/* Badge Icon */}
           <div className="mx-auto w-12 h-12 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-6">
             <ShieldCheck className="h-6 w-6" />
@@ -115,7 +115,7 @@ const AdminLogin = () => {
                     type="email"
                     id="email"
                     required
-                    placeholder="donboscop24@gmail.com"
+                    placeholder="example123@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white transition-all text-sm"
@@ -175,7 +175,7 @@ const AdminLogin = () => {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
-                
+
                 <button
                   type="submit"
                   disabled={loading}
