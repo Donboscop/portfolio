@@ -8,7 +8,7 @@ if (import.meta.env.PROD) {
   const originalFetch = window.fetch;
   window.fetch = function (url, options) {
     if (typeof url === 'string' && url.startsWith('/api/')) {
-      const backendUrl = import.meta.env.VITE_API_URL || '';
+      const backendUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
       url = `${backendUrl}${url}`;
     }
     return originalFetch(url, options);

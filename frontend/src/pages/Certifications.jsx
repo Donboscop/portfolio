@@ -318,7 +318,7 @@ const Certifications = () => {
                 {/* Card Action Row */}
                 <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-900/50 flex items-center justify-between gap-4">
                   <a
-                    href={cert.pdfUrl}
+                    href={cert.pdfUrl.startsWith('http') ? cert.pdfUrl : `${import.meta.env.VITE_API_URL || ''}${cert.pdfUrl}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm hover:shadow-blue-500/10 cursor-pointer"
