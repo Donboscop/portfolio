@@ -14,6 +14,7 @@ import messageRoutes from './routes/messages.js';
 import certificationRoutes from './routes/certifications.js';
 import Certificate from './models/Certificate.js';
 import fs from 'fs';
+import mongoose from 'mongoose';
 
 // Configure dotenv
 dotenv.config();
@@ -36,6 +37,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Mount API Routes
+app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'Backend server is running.' }));
+
+// Database connection validation middleware
+app.use('/api', (req, res, next) => {
+  if (req.path === '/health') return next();
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ 
+      message: 'Database connection is offline. Please ensure MONGO_URI environment variable is configured correctly on Render and pointing to MongoDB Atlas.' 
+    });
+  }
+  next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/stats', statsRoutes);

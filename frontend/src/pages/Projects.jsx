@@ -35,7 +35,8 @@ const Projects = () => {
 
         const res = await fetch(url);
         if (!res.ok) {
-          throw new Error('Failed to fetch projects');
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Failed to fetch projects');
         }
         const data = await res.json();
         setProjects(data);
