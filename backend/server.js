@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import User from './models/User.js';
 import Project from './models/Project.js';
@@ -16,8 +17,12 @@ import Certificate from './models/Certificate.js';
 import fs from 'fs';
 import mongoose from 'mongoose';
 
-// Configure dotenv
-dotenv.config();
+// Define __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configure dotenv to find .env in backend directory
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // Connect to MongoDB
 connectDB();
@@ -34,7 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve Static Uploads Folder
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Mount API Routes
 app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'Backend server is running.' }));
@@ -58,7 +63,7 @@ app.use('/api/certifications', certificationRoutes);
 
 // Serve Frontend Static Build in Production
 if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(process.cwd(), '..', 'frontend', 'dist');
+  const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
   app.use(express.static(frontendPath));
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
@@ -145,8 +150,8 @@ const seedCertificates = async () => {
   try {
     const certCount = await Certificate.countDocuments();
     if (certCount === 0) {
-      const srcDir = path.join(process.cwd(), '..', 'frontend', 'src', 'assets', 'certificate');
-      const destDir = path.join(process.cwd(), 'uploads');
+      const srcDir = path.join(__dirname, '..', 'frontend', 'src', 'assets', 'certificate');
+      const destDir = path.join(__dirname, 'uploads');
       
       if (!fs.existsSync(destDir)) {
         fs.mkdirSync(destDir, { recursive: true });
