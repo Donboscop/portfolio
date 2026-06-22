@@ -9,7 +9,9 @@ if (import.meta.env.PROD) {
   window.fetch = function (url, options) {
     if (typeof url === 'string' && url.startsWith('/api/')) {
       const backendUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-      url = `${backendUrl}${url}`;
+      const finalUrl = `${backendUrl}${url}`;
+      console.log(`[API Fetch] Requesting: ${url} -> ${finalUrl}`);
+      url = finalUrl;
     }
     return originalFetch(url, options);
   };
