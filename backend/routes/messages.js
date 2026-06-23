@@ -1,6 +1,7 @@
 import express from 'express';
 import Message from '../models/Message.js';
 import protect from '../middleware/auth.js';
+import { sendEmail } from '../config/mailer.js';
 
 const router = express.Router();
 
@@ -23,6 +24,34 @@ router.post('/', async (req, res) => {
     });
 
     const savedMessage = await newMessage.save();
+
+    // Send email notification to admin
+    const adminEmail = process.env.ADMIN_EMAIL || 'donboscop24@gmail.com';
+    await sendEmail({
+      to: adminEmail,
+      subject: `New Portfolio Message: ${subject || 'No Subject'}`,
+      text: `You have received a new contact message.\n\nFrom: ${name} (${email})\nSubject: ${subject || 'No Subject'}\nMessage:\n${message}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+          <h2 style="color: #2563eb; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-top: 0;">New Contact Form Message</h2>
+          <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold; width: 100px;">From:</td>
+              <td style="padding: 6px 0;">${name} (&lt;${email}&gt;)</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">Subject:</td>
+              <td style="padding: 6px 0;">${subject || 'No Subject'}</td>
+            </tr>
+          </table>
+          <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 4px; margin-top: 16px; font-style: italic; white-space: pre-line;">
+            ${message}
+          </div>
+          <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 12px;">Sent from your Developer Portfolio Website</p>
+        </div>
+      `
+    });
+
     res.status(201).json(savedMessage);
   } catch (error) {
     res.status(400).json({ message: error.message });

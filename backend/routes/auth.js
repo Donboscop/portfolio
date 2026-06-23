@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import protect from '../middleware/auth.js';
+import { sendEmail } from '../config/mailer.js';
 
 const router = express.Router();
 
@@ -29,14 +30,30 @@ router.post('/otp/send', async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
-    // Print to the server terminal console
-    console.log('\n======================================================');
-    console.log('              [OTP VERIFICATION SERVICE]');
-    console.log(`  To:       ${email}`);
-    console.log(`  Code:     ${generatedOtp}  (Expires in 5 minutes)`);
-    console.log('======================================================\n');
+    // Send via email service
+    const mailResult = await sendEmail({
+      to: email,
+      subject: 'Your Admin Dashboard OTP Code',
+      text: `Your OTP is: ${generatedOtp}. It is valid for 5 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc; color: #1e293b;">
+          <h2 style="color: #2563eb; text-align: center; margin-bottom: 24px;">Secure Verification Code</h2>
+          <p style="font-size: 15px; line-height: 1.5;">Hello,</p>
+          <p style="font-size: 15px; line-height: 1.5;">A request was made to log into the Admin Dashboard of your Developer Portfolio. Please use the verification code below:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; padding: 12px 24px; background-color: #eff6ff; border: 1px dashed #3b82f6; border-radius: 8px; color: #1d4ed8; display: inline-block;">${generatedOtp}</span>
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 16px;">This code is valid for <strong>5 minutes</strong>. If you did not initiate this request, please secure your credentials immediately.</p>
+        </div>
+      `
+    });
 
-    res.json({ success: true, message: 'Verification code sent to your server console!' });
+    res.json({ 
+      success: true, 
+      message: mailResult.fallback 
+        ? 'Verification code generated! Please check your server console log.' 
+        : 'Verification code sent to your email inbox!' 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
