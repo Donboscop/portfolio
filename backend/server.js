@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import User from './models/User.js';
 import Project from './models/Project.js';
+import Skill from './models/Skill.js';
+import Milestone from './models/Milestone.js';
 
 // Load route files
 import authRoutes from './routes/auth.js';
@@ -13,6 +15,8 @@ import projectRoutes from './routes/projects.js';
 import statsRoutes from './routes/stats.js';
 import messageRoutes from './routes/messages.js';
 import certificationRoutes from './routes/certifications.js';
+import skillsRoutes from './routes/skills.js';
+import milestoneRoutes from './routes/milestones.js';
 import Certificate from './models/Certificate.js';
 import fs from 'fs';
 import mongoose from 'mongoose';
@@ -57,6 +61,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/certifications', certificationRoutes);
+app.use('/api/skills', skillsRoutes);
+app.use('/api/milestones', milestoneRoutes);
 
 // Serve Frontend Static Build in Production
 if (process.env.NODE_ENV === 'production') {
@@ -273,6 +279,85 @@ const seedCertificates = async () => {
 
 const PORT = process.env.PORT || 5000;
 
+// Seed default skills if database is empty
+const seedSkills = async () => {
+  try {
+    const skillCount = await Skill.countDocuments();
+    if (skillCount === 0) {
+      const defaultSkills = [
+        // Frontend
+        { name: 'React.js', level: 90, category: 'frontend' },
+        { name: 'JavaScript (ES6+)', level: 95, category: 'frontend' },
+        { name: 'HTML5 / CSS3', level: 95, category: 'frontend' },
+        { name: 'Tailwind CSS', level: 90, category: 'frontend' },
+        { name: 'Redux Toolkit', level: 80, category: 'frontend' },
+        { name: 'TypeScript', level: 85, category: 'frontend' },
+        // Backend
+        { name: 'Node.js', level: 85, category: 'backend' },
+        { name: 'Express.js', level: 90, category: 'backend' },
+        { name: 'Java (OOP)', level: 80, category: 'backend' },
+        { name: 'REST APIs', level: 95, category: 'backend' },
+        { name: 'JWT Authentication', level: 90, category: 'backend' },
+        { name: 'GraphQL', level: 70, category: 'backend' },
+        // Database
+        { name: 'MongoDB / Mongoose', level: 88, category: 'database' },
+        { name: 'MySQL', level: 75, category: 'database' },
+        { name: 'PostgreSQL', level: 80, category: 'database' },
+        { name: 'Redis', level: 65, category: 'database' },
+        // DevOps / Tools
+        { name: 'Git / GitHub', level: 92, category: 'devops' },
+        { name: 'Docker', level: 75, category: 'devops' },
+        { name: 'Vite / Webpack', level: 85, category: 'devops' },
+        { name: 'AWS (S3, EC2)', level: 70, category: 'devops' },
+        { name: 'Postman', level: 90, category: 'devops' }
+      ];
+      await Skill.insertMany(defaultSkills);
+      console.log('Default skills seeded successfully in MongoDB!');
+    }
+  } catch (error) {
+    console.error('Error seeding skills:', error.message);
+  }
+};
+
+// Seed default milestones if database is empty
+const seedMilestones = async () => {
+  try {
+    const milestoneCount = await Milestone.countDocuments();
+    if (milestoneCount === 0) {
+      const defaultMilestones = [
+        {
+          year: 'July 2025',
+          title: 'Web Development Trainee',
+          company: 'ILINKS Infotech',
+          description: 'Gained hands-on experience in responsive web development, interactive UI design, frontend debugging, and real-time project implementation.'
+        },
+        {
+          year: 'June 2025',
+          title: 'Full Stack Masterclass Trainee',
+          company: 'NoviTech R&D Private Limited',
+          description: 'Built dynamic full-stack web applications with REST API integration, responsive UI components, and database connectivity.'
+        },
+        {
+          year: '2024 (2 Months)',
+          title: 'Web Development Intern',
+          company: 'EdiGlobe',
+          description: 'Developed responsive and user-friendly web pages using HTML, CSS, JavaScript, and Bootstrap, while improving frontend performance.'
+        },
+        {
+          year: '2022 - 2026',
+          title: 'B.Tech in Information Technology',
+          company: 'UCE (BIT Campus), Anna University',
+          description: 'Pursuing degree with focus on database systems, data structures, and web technologies. Cumulative GPA: 7.75/10.'
+        }
+      ];
+      await Milestone.insertMany(defaultMilestones);
+      console.log('Default milestones seeded successfully in MongoDB!');
+    }
+  } catch (error) {
+    console.error('Error seeding milestones:', error.message);
+  }
+};
+
 // Initialize database connection and seeding
 const startServer = async () => {
   try {
@@ -281,6 +366,8 @@ const startServer = async () => {
     await seedAdmin();
     await seedProjects();
     await seedCertificates();
+    await seedSkills();
+    await seedMilestones();
   } catch (err) {
     console.error('Failed to initialize server and database:', err.message);
   }
