@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import protect from '../middleware/auth.js';
 import { sendEmail } from '../config/mailer.js';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 const router = express.Router();
 
@@ -112,6 +115,94 @@ router.get('/verify', protect, async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ valid: false, message: error.message });
+  }
+});
+
+// @desc    Get admin profile publicly (for loading profile pic)
+// @route   GET /api/auth/admin-profile
+// @access  Public
+router.get('/admin-profile', async (req, res) => {
+  try {
+    const user = await User.findOne({}).select('email profilePic');
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'Admin user not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Configure Multer for local profile picture uploads
+const uploadDir = 'uploads/';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename(req, file, cb) {
+    const ext = path.extname(file.originalname) || '.jpg';
+    cb(null, `profile-pic-${Date.now()}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter(req, file, cb) {
+    if (/image/i.test(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Images only (jpeg, jpg, png, webp, gif)!'));
+    }
+  }
+});
+
+// @desc    Upload / Update admin profile picture
+// @route   POST /api/auth/profile-pic
+// @access  Private/Admin
+router.post('/profile-pic', protect, upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'Profile image is required' });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      fs.unlinkSync(req.file.path);
+      return res.status(404).json({ message: 'Admin user not found' });
+    }
+
+    // Clean up old profile pic file if it was custom
+    if (user.profilePic && user.profilePic.startsWith('/uploads/')) {
+      const oldPath = path.join(process.cwd(), user.profilePic.substring(1));
+      if (fs.existsSync(oldPath)) {
+        try {
+          fs.unlinkSync(oldPath);
+        } catch (err) {
+          console.error('Failed to delete old profile pic:', err.message);
+        }
+      }
+    }
+
+    // Save new profile pic path
+    user.profilePic = `/uploads/${req.file.filename}`;
+    await user.save();
+
+    res.json({ success: true, profilePic: user.profilePic });
+  } catch (error) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (err) {
+        console.error('Failed cleanup of failed upload:', err.message);
+      }
+    }
+    res.status(500).json({ message: error.message });
   }
 });
 

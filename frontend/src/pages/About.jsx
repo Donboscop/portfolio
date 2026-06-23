@@ -9,7 +9,8 @@ import {
   Edit2, 
   Trash2, 
   X, 
-  Save 
+  Save,
+  Camera
 } from 'lucide-react';
 import '../components/CustomAnimation.css';
 
@@ -18,6 +19,8 @@ const About = () => {
   
   const [milestones, setMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [profilePic, setProfilePic] = useState('/profile.jpg');
+  const [uploadingPic, setUploadingPic] = useState(false);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,20 +47,64 @@ const About = () => {
     } catch (err) {
       console.error('Error fetching milestones:', err);
     } finally {
-      // Small visual delay for shimmer skeleton
       setTimeout(() => {
         setLoading(false);
       }, 300);
     }
   };
 
+  // Fetch admin profile details publicly (profile pic)
+  const fetchAdminProfile = async () => {
+    try {
+      const res = await fetch('/api/auth/admin-profile');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profilePic) {
+          setProfilePic(data.profilePic);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching admin profile:', err);
+    }
+  };
+
   useEffect(() => {
     fetchMilestones();
+    fetchAdminProfile();
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleProfilePicUpload = async (e) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    
+    setUploadingPic(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await authFetch('/api/auth/profile-pic', {
+        method: 'POST',
+        body: formData // Content-Type is automatically set by browser
+      });
+
+      const data = await res.json();
+      if (res.ok && data.profilePic) {
+        setProfilePic(data.profilePic);
+        alert('Profile picture updated successfully!');
+      } else {
+        throw new Error(data.message || 'Failed to upload profile picture');
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    } finally {
+      setUploadingPic(false);
+    }
   };
 
   const startAddMilestone = () => {
@@ -162,10 +209,33 @@ const About = () => {
               <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-pink-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
               <div className="relative w-48 h-56 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-md">
                 <img
-                  src="/profile.jpg"
+                  src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_URL || ''}${profilePic}`}
                   alt="Don Bosco P"
                   className="w-full h-full object-cover transform hover:scale-105 transition duration-500"
                 />
+                
+                {/* Admin Profile Pic Upload Overlay */}
+                {isAuthenticated && (
+                  <div className="absolute inset-0 bg-slate-900/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <label className="cursor-pointer p-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full text-white transition-all flex flex-col items-center gap-1">
+                      {uploadingPic ? (
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <Camera className="h-6 w-6" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Change</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfilePicUpload}
+                        className="hidden"
+                        disabled={uploadingPic}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">Don Bosco P</h3>
@@ -282,7 +352,7 @@ const About = () => {
                     <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                       {item.company}
                     </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                    <p className="text-sm text-slate-650 dark:text-slate-400 mt-2 leading-relaxed">
                       {item.description}
                     </p>
                   </div>
@@ -382,7 +452,7 @@ const About = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-650 dark:text-slate-350 font-semibold hover:bg-slate-55/50 dark:hover:bg-slate-950/40 cursor-pointer"
+                  className="px-5 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-650 dark:text-slate-355 font-semibold hover:bg-slate-55/50 dark:hover:bg-slate-950/40 cursor-pointer"
                 >
                   Cancel
                 </button>
