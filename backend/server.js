@@ -378,7 +378,7 @@ startServer();
 
 // Listen on port only in local development (not under Vercel serverless)
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running in development/local mode on port ${PORT}`);
   });
 }
