@@ -24,9 +24,6 @@ const __dirname = path.dirname(__filename);
 // Configure dotenv to find .env in backend directory
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-// Connect to MongoDB
-connectDB();
-
 const app = express();
 
 // Middleware
@@ -276,10 +273,27 @@ const seedCertificates = async () => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, async () => {
-  console.log(`Server running in mode on port ${PORT}`);
-  // Run seed check
-  await seedAdmin();
-  await seedProjects();
-  await seedCertificates();
-});
+// Initialize database connection and seeding
+const startServer = async () => {
+  try {
+    await connectDB();
+    // Run seed checks
+    await seedAdmin();
+    await seedProjects();
+    await seedCertificates();
+  } catch (err) {
+    console.error('Failed to initialize server and database:', err.message);
+  }
+};
+
+// Start DB connection & seeding immediately
+startServer();
+
+// Listen on port only in local development (not under Vercel serverless)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running in development/local mode on port ${PORT}`);
+  });
+}
+
+export default app;
