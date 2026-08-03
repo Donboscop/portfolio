@@ -49,10 +49,14 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email })
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type');
+      let data = {};
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to send verification code');
+        throw new Error(data.message || `Server returned error (${response.status})`);
       }
 
       return { success: true, message: data.message };
@@ -71,10 +75,14 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, otp })
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type');
+      let data = {};
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || 'Verification failed');
+        throw new Error(data.message || `Server returned error (${response.status})`);
       }
 
       localStorage.setItem('token', data.token);

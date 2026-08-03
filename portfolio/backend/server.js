@@ -28,6 +28,8 @@ const __dirname = path.dirname(__filename);
 // Configure dotenv to find .env in backend directory
 dotenv.config({ path: path.join(__dirname, '.env') });
 
+const PORT = process.env.PORT || 5000;
+
 const app = express();
 
 // Middleware
@@ -46,11 +48,14 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'Backend server is running.' }));
 
 // Database connection validation middleware
-app.use('/api', (req, res, next) => {
+app.use('/api', async (req, res, next) => {
   if (req.path === '/health') return next();
   if (mongoose.connection.readyState !== 1) {
+    await connectDB();
+  }
+  if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ 
-      message: 'Database connection is offline. Please ensure MONGO_URI environment variable is configured correctly on Render and pointing to MongoDB Atlas.' 
+      message: 'Database connection is offline. Please ensure MONGO_URI environment variable is configured correctly in your deployment platform (Vercel/Render) and MongoDB Atlas allows 0.0.0.0/0.' 
     });
   }
   next();
@@ -276,8 +281,6 @@ const seedCertificates = async () => {
     console.error('Error seeding certificates:', error.message);
   }
 };
-
-const PORT = process.env.PORT || 5000;
 
 // Seed default skills if database is empty
 const seedSkills = async () => {
