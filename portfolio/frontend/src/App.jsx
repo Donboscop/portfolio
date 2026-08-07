@@ -44,6 +44,8 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/skills" element={<Skills />} />
           <Route path="/projects" element={<Projects />} />
+          {/* Dual route support for /projects/:id and /project/:id */}
+          <Route path="/projects/:id" element={<ProjectDetails />} />
           <Route path="/project/:id" element={<ProjectDetails />} />
           <Route path="/certifications" element={<Certifications />} />
           <Route path="/resume" element={<Resume />} />

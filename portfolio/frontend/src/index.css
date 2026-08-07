@@ -4,77 +4,99 @@
 
 @layer base {
   :root {
-    /* Light Theme (Clean Professional Tech Blue) */
-    --bg-primary: 210 40% 98%;
-    --bg-secondary: 0 0% 100%;
-    --text-primary: 222 47% 11%;
-    --text-secondary: 215 16% 47%;
-    --accent: 221 83% 53%; /* Royal Blue */
-    --accent-glow: 221 83% 53% / 15%;
-    --accent-hover: 221 83% 45%;
-    --border-color: 214 32% 91%;
-    --glass-bg: 255 255 255 / 70%;
-    --glass-border: 255 255 255 / 40%;
+    /* Adri Fluid Theme Light */
+    --bg-primary: 0 0% 98%;
+    --bg-secondary: 0 0% 94%;
+    --text-primary: 240 10% 8%;
+    --text-secondary: 240 5% 40%;
+    --accent: 260 84% 58%; /* Adri Fluid Purple/Violet */
+    --accent-glow: 260 84% 58% / 20%;
+    --accent-hover: 260 84% 48%;
+    --border-color: 240 6% 88%;
+    --glass-bg: 255 255 255 / 75%;
+    --glass-border: 0 0% 0% / 8%;
   }
 
   .dark {
-    /* Dark Theme (Midnight Obsidian Tech Glow) */
-    --bg-primary: 222 47% 6%;
-    --bg-secondary: 222 47% 10%;
-    --text-primary: 210 40% 98%;
-    --text-secondary: 215 20% 65%;
-    --accent: 217 91% 60%; /* Electric Cobalt Blue */
-    --accent-glow: 217 91% 60% / 25%;
-    --accent-hover: 217 91% 68%;
-    --border-color: 222 47% 16%;
-    --glass-bg: 15 23 42 / 70%;
-    --glass-border: 255 255 255 / 10%;
+    /* Adri Fluid Theme Dark */
+    --bg-primary: 240 10% 4%;
+    --bg-secondary: 240 8% 8%;
+    --text-primary: 0 0% 98%;
+    --text-secondary: 240 5% 65%;
+    --accent: 265 89% 66%; /* Electric Violet Glow */
+    --accent-glow: 265 89% 66% / 25%;
+    --accent-hover: 265 89% 74%;
+    --border-color: 240 6% 16%;
+    --glass-bg: 18 18 26 / 75%;
+    --glass-border: 255 255 255 / 8%;
   }
 
   body {
     background-color: hsl(var(--bg-primary));
     color: hsl(var(--text-primary));
-    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Syne', 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-x: hidden;
   }
 }
 
-/* Glassmorphism panel styling - Premium Liquid Glass */
+/* Adri Fluid Bold Editorial Headings */
+.fluid-heading-xl {
+  font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.fluid-heading-lg {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.fluid-heading-md {
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* Glassmorphism panel styling - Adri Fluid Glass */
 .glass-panel {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.03) 100%
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.2) 100%
   );
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 
-    0 8px 32px 0 rgba(31, 38, 135, 0.05),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+    0 10px 40px 0 rgba(0, 0, 0, 0.04),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .dark .glass-panel {
   background: linear-gradient(
     135deg,
-    rgba(15, 23, 42, 0.55) 0%,
-    rgba(15, 23, 42, 0.35) 100%
+    rgba(20, 20, 30, 0.65) 0%,
+    rgba(14, 14, 22, 0.45) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 8px 32px 0 rgba(0, 0, 0, 0.35),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.06);
+    0 10px 40px 0 rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Dynamic floating liquid background elements */
+/* Dynamic floating liquid background blobs */
 body::before, body::after {
   content: '';
   position: fixed;
-  width: 45vw;
-  height: 45vw;
+  width: 50vw;
+  height: 50vw;
   border-radius: 50%;
-  filter: blur(90px);
+  filter: blur(100px);
   z-index: -2;
   opacity: 0.15;
   pointer-events: none;
@@ -86,17 +108,17 @@ body::before, body::after {
 }
 
 body::before {
-  background: radial-gradient(circle, #3b82f6 0%, #6366f1 100%);
-  top: -10%;
+  background: radial-gradient(circle, #7c3aed 0%, #3b82f6 100%);
+  top: -15%;
   left: -10%;
-  animation: liquid-move-1 30s ease-in-out infinite alternate;
+  animation: liquid-move-1 25s ease-in-out infinite alternate;
 }
 
 body::after {
-  background: radial-gradient(circle, #ec4899 0%, #8b5cf6 100%);
-  bottom: -10%;
+  background: radial-gradient(circle, #ec4899 0%, #6366f1 100%);
+  bottom: -15%;
   right: -10%;
-  animation: liquid-move-2 30s ease-in-out infinite alternate;
+  animation: liquid-move-2 25s ease-in-out infinite alternate;
 }
 
 @keyframes liquid-move-1 {
@@ -125,8 +147,18 @@ body::after {
 
 /* Subtle border glow effect */
 .glow-border:hover {
-  box-shadow: 0 0 20px -3px hsl(var(--accent)), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 25px -2px hsl(var(--accent) / 40%), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
   border-color: hsl(var(--accent));
+}
+
+/* Iconsax & motion accent effects */
+.icon-glow {
+  transition: all 0.3s ease;
+}
+
+.icon-glow:hover {
+  transform: translateY(-2px) scale(1.05);
+  filter: drop-shadow(0 4px 12px hsl(var(--accent) / 40%));
 }
 
 /* Scrollbar styles */
@@ -152,14 +184,4 @@ body::after {
 ::selection {
   background-color: hsl(var(--accent));
   color: #fff;
-}
-
-/* Custom Button text contrast fixes for secondary buttons */
-.btn-secondary {
-  color: hsl(var(--text-primary)) !important;
-  transition: color 0.3s ease, border-color 0.3s ease !important;
-}
-
-.btn-secondary:hover {
-  color: hsl(var(--accent)) !important;
 }

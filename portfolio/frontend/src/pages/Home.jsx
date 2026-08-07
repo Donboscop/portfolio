@@ -1,88 +1,155 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Code, Download, Github, Linkedin, Briefcase } from 'lucide-react';
+import { ArrowUpRight, Download, Mail, Sparkles, Terminal, Code2, Database, ShieldCheck, Server } from 'lucide-react';
+import AnimeWrapper from '../components/AnimeWrapper';
+import IconsaxIcon from '../components/IconsaxIcon';
 import '../components/CustomAnimation.css';
 
 const Home = () => {
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden grid-pattern">
-      {/* Dynamic colorful decorative backdrop blobs */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-blue-500/10 dark:bg-blue-500/15 blur-3xl animate-spin-slow"></div>
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-pink-500/10 dark:bg-pink-500/15 blur-3xl animate-spin-slow delay-300"></div>
+    <div className="relative min-h-screen pt-24 pb-16 flex flex-col justify-center overflow-hidden">
+      {/* Background Animated Motion SVGs (Jitter / SVGator Inspired) */}
+      <div className="absolute inset-0 pointer-events-none opacity-25 dark:opacity-35 overflow-hidden">
+        <svg className="w-full h-full" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="200" cy="200" r="180" stroke="url(#paint0_linear)" strokeWidth="2" strokeDasharray="8 8" className="animate-spin-slow" />
+          <circle cx="800" cy="700" r="250" stroke="url(#paint1_linear)" strokeWidth="1.5" strokeDasharray="12 12" />
+          <defs>
+            <linearGradient id="paint0_linear" x1="0" y1="0" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#8b5cf6" />
+              <stop offset="1" stopColor="#ec4899" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="paint1_linear" x1="550" y1="450" x2="1050" y2="950" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#06b6d4" />
+              <stop offset="1" stopColor="#3b82f6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 flex flex-col items-center text-center">
-        {/* Profile Image with Gradient Border */}
-        <div className="mb-6 relative group animate-fade-in-up">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-pink-500 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-          <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-white dark:border-slate-900 shadow-xl">
-            <img
-              src="/profile.jpg"
-              alt="Don Bosco P"
-              className="w-full h-full object-cover transform hover:scale-110 transition duration-500"
-            />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        {/* Category Sub-Headline Badge */}
+        <AnimeWrapper animationType="fadeUp" delay={100}>
+          <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full glass-panel border border-purple-500/20 mb-8 shadow-sm">
+            <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
+            <span className="text-xs sm:text-sm font-bold tracking-wider text-purple-600 dark:text-purple-300 uppercase">
+              FULL-STACK DEVELOPER & AWS CLOUD PRACTITIONER
+            </span>
+          </div>
+        </AnimeWrapper>
+
+        {/* Hero Main Grid - Editorial Asymmetric Fluid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left Column: Bold Typography Header */}
+          <div className="lg:col-span-8 space-y-6 text-left">
+            <AnimeWrapper animationType="fadeUp" delay={200}>
+              <h1 className="fluid-heading-xl tracking-tight text-slate-900 dark:text-white">
+                Building <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-500">scalable full-stack applications</span> with cloud-ready architectures.
+              </h1>
+            </AnimeWrapper>
+
+            <AnimeWrapper animationType="fadeUp" delay={300}>
+              <p className="text-lg sm:text-2xl font-medium text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+                Hi, I'm <strong className="text-purple-600 dark:text-purple-400 font-bold">Don Bosco P</strong>. I craft high-performance web applications using the MERN stack and build secure, cloud-ready infrastructure on AWS.
+              </p>
+            </AnimeWrapper>
+
+            {/* Action Buttons */}
+            <AnimeWrapper animationType="fadeUp" delay={400}>
+              <div className="pt-4 flex flex-wrap gap-4 items-center">
+                <Link
+                  to="/projects"
+                  className="px-8 py-4 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-base flex items-center space-x-3 transition-all duration-300 shadow-lg shadow-purple-600/30 hover:scale-[1.02] cursor-pointer"
+                >
+                  <span>Explore Portfolio</span>
+                  <ArrowUpRight className="w-5 h-5" />
+                </Link>
+
+                <Link
+                  to="/contact"
+                  className="px-8 py-4 rounded-2xl glass-panel text-slate-900 dark:text-white font-bold text-base flex items-center space-x-2 hover:bg-purple-500/10 border border-slate-200/50 dark:border-white/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                >
+                  <Mail className="w-4 h-4 text-purple-500" />
+                  <span>Get In Touch</span>
+                </Link>
+
+                <Link
+                  to="/resume"
+                  className="px-6 py-4 rounded-2xl border border-slate-300/60 dark:border-white/10 text-slate-700 dark:text-slate-300 font-semibold text-base flex items-center space-x-2 hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Resume</span>
+                </Link>
+              </div>
+            </AnimeWrapper>
+          </div>
+
+          {/* Right Column: Floating Visual Card Spotlight */}
+          <div className="lg:col-span-4 relative">
+            <AnimeWrapper animationType="float" delay={500}>
+              <div className="glass-panel p-8 rounded-3xl border border-white/20 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl group-hover:bg-purple-500/40 transition-all duration-500"></div>
+
+                {/* Developer Avatar Badge */}
+                <div className="relative w-28 h-28 rounded-2xl overflow-hidden mb-6 border-2 border-purple-500/30 shadow-md">
+                  <img
+                    src="/profile.jpg"
+                    alt="Don Bosco P"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <IconsaxIcon name="terminal" size={22} />
+                    <span className="font-bold text-slate-900 dark:text-white text-lg">MERN & AWS Engineer</span>
+                  </div>
+
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Designing resilient full-stack applications with MongoDB, PostgreSQL, and AWS cloud management.
+                  </p>
+
+                  <div className="pt-4 border-t border-slate-200/50 dark:border-white/10 flex flex-wrap gap-2">
+                    {['MongoDB', 'Express.js', 'React.js', 'Node.js', 'AWS Cloud', 'Java'].map((tech, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 text-xs font-semibold rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </AnimeWrapper>
           </div>
         </div>
 
-
-
-        {/* Hero Title */}
-        <h1 className="mt-6 text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-4xl leading-tight animate-fade-in-up delay-100">
-          Hi, I am <span className="text-gradient">Don Bosco P</span>
-        </h1>
-        
-        {/* Professional Subheading */}
-        <p className="mt-4 text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 animate-fade-in-up delay-200">
-          Full-Stack MERN Developer
-        </p>
-
-        {/* Detailed Pitch */}
-        <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl animate-fade-in-up delay-200">
-          I build premium, production-ready web applications combining clean server logic with modern, responsive, and interactive user experiences.
-        </p>
-
-        {/* CTA Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center w-full animate-fade-in-up delay-300">
-          <Link
-            to="/projects"
-            className="flex items-center justify-center w-full sm:w-auto px-8 py-3 bg-blue-600 dark:bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg hover:shadow-blue-500/20 cursor-pointer hover-spring"
-          >
-            Explore Projects
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-          <Link
-            to="/contact"
-            className="flex items-center justify-center w-full sm:w-auto px-8 py-3 glass-panel btn-secondary font-semibold rounded-lg hover:bg-slate-100/50 dark:hover:bg-slate-900/30 transition-colors cursor-pointer hover-spring"
-          >
-            Get In Touch
-          </Link>
-          <Link
-            to="/resume"
-            className="flex items-center justify-center w-full sm:w-auto px-8 py-3 border border-slate-300 dark:border-slate-700 btn-secondary font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-950/40 transition-colors cursor-pointer hover-spring"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Resume
-          </Link>
-        </div>
-
-        {/* Visual Showcase Stats Grid */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-4xl animate-fade-in-up delay-400">
-          <div className="glass-panel p-6 rounded-xl text-center glow-border transition-all duration-300">
-            <h3 className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">20+</h3>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Projects Completed</p>
+        {/* Highlight Badges / Stats Grid */}
+        <AnimeWrapper animationType="staggerChildren" delay={600} stagger={120} className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="glass-panel p-6 rounded-2xl border border-slate-200/50 dark:border-white/10 hover:border-purple-500/30 transition-all duration-300">
+            <IconsaxIcon name="code" size={24} className="mb-3" />
+            <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white">20+</h3>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">DEPLOYED PROJECTS & LABS</p>
           </div>
-          <div className="glass-panel p-6 rounded-xl text-center glow-border transition-all duration-300">
-            <h3 className="text-3xl font-extrabold text-pink-500">10+</h3>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Happy Recruiters</p>
+
+          <div className="glass-panel p-6 rounded-2xl border border-slate-200/50 dark:border-white/10 hover:border-purple-500/30 transition-all duration-300">
+            <IconsaxIcon name="database" size={24} className="mb-3" />
+            <h3 className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">MERN Stack</h3>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">FULL-STACK ARCHITECTURE</p>
           </div>
-          <div className="glass-panel p-6 rounded-xl text-center glow-border transition-all duration-300">
-            <h3 className="text-3xl font-extrabold text-purple-500">15+</h3>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Tech Stack Tools</p>
+
+          <div className="glass-panel p-6 rounded-2xl border border-slate-200/50 dark:border-white/10 hover:border-purple-500/30 transition-all duration-300">
+            <IconsaxIcon name="server" size={24} className="mb-3" />
+            <h3 className="text-3xl font-extrabold text-pink-500">AWS Certified</h3>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">CLOUD PRACTITIONER</p>
           </div>
-          <div className="glass-panel p-6 rounded-xl text-center glow-border transition-all duration-300">
-            <h3 className="text-3xl font-extrabold text-teal-500">24/7</h3>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Support & Work</p>
+
+          <div className="glass-panel p-6 rounded-2xl border border-slate-200/50 dark:border-white/10 hover:border-purple-500/30 transition-all duration-300">
+            <IconsaxIcon name="layers" size={24} className="mb-3" />
+            <h3 className="text-3xl font-extrabold text-indigo-500">Cloud Ready</h3>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">DEVOPS & LINUX SKILLS</p>
           </div>
-        </div>
+        </AnimeWrapper>
       </div>
     </div>
   );

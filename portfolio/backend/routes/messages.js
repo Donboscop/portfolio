@@ -1,9 +1,11 @@
 import express from 'express';
-import Message from '../models/Message.js';
+import { query } from '../config/db.js';
 import protect from '../middleware/auth.js';
 import { sendEmail } from '../config/mailer.js';
 
 const router = express.Router();
+
+const mapMessage = (row) => row ? { ...row, _id: row.id, createdAt: row.created_at } : null;
 
 // @desc    Submit a contact message
 // @route   POST /api/messages
@@ -16,18 +18,16 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const newMessage = new Message({
-      name,
-      email,
-      subject,
-      message
-    });
+    const result = await query(
+      'INSERT INTO messages (name, email, subject, message) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, email, subject || '', message]
+    );
 
-    const savedMessage = await newMessage.save();
+    const savedMessage = mapMessage(result.rows[0]);
 
     // Send email notification to admin
     const adminEmail = process.env.ADMIN_EMAIL || 'donboscop24@gmail.com';
-    await sendEmail({
+    sendEmail({
       to: adminEmail,
       subject: `New Portfolio Message: ${subject || 'No Subject'}`,
       text: `You have received a new contact message.\n\nFrom: ${name} (${email})\nSubject: ${subject || 'No Subject'}\nMessage:\n${message}`,
@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
           <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 12px;">Sent from your Developer Portfolio Website</p>
         </div>
       `
-    });
+    }).catch(err => console.error('Email send failed:', err.message));
 
     res.status(201).json(savedMessage);
   } catch (error) {
@@ -63,8 +63,8 @@ router.post('/', async (req, res) => {
 // @access  Private/Admin
 router.get('/', protect, async (req, res) => {
   try {
-    const messages = await Message.find().sort({ createdAt: -1 });
-    res.json(messages);
+    const result = await query('SELECT * FROM messages ORDER BY created_at DESC');
+    res.json(result.rows.map(mapMessage));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -75,13 +75,14 @@ router.get('/', protect, async (req, res) => {
 // @access  Private/Admin
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const message = await Message.findById(req.params.id);
+    const msgId = parseInt(req.params.id, 10);
+    const existing = await query('SELECT * FROM messages WHERE id = $1', [msgId]);
 
-    if (!message) {
+    if (existing.rows.length === 0) {
       return res.status(404).json({ message: 'Message not found' });
     }
 
-    await Message.findByIdAndDelete(req.params.id);
+    await query('DELETE FROM messages WHERE id = $1', [msgId]);
     res.json({ message: 'Message deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });

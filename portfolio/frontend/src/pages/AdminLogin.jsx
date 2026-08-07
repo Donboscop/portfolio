@@ -8,7 +8,6 @@ const AdminLogin = () => {
   const { sendOtp, verifyOtp, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // State Management
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -16,14 +15,12 @@ const AdminLogin = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/admin');
     }
   }, [isAuthenticated, navigate]);
 
-  // Step 1: Send OTP code to console
   const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!email) {
@@ -40,13 +37,12 @@ const AdminLogin = () => {
 
     if (result.success) {
       setIsOtpSent(true);
-      setStatusMessage('Verification code generated! Please check your server console log.');
+      setStatusMessage(result.message || 'Verification code generated! Please check your email.');
     } else {
-      setError(result.message || 'Verification failed. Make sure email matches admin record.');
+      setError(result.message || 'Verification failed. Please check your backend connection.');
     }
   };
 
-  // Step 2: Verify OTP code and Log In
   const handleVerifyLogin = async (e) => {
     e.preventDefault();
     if (!otp) {
@@ -68,16 +64,12 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center grid-pattern py-12 px-4 sm:px-6 lg:px-8">
-      {/* Background radial glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-blue-500/10 dark:bg-blue-500/15 blur-3xl"></div>
-
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center pt-28 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full relative z-10">
-        <div className="glass-panel p-8 sm:p-10 rounded-3xl shadow-sm text-center">
+        <div className="glass-panel p-8 sm:p-10 rounded-3xl text-center border border-slate-200/50 dark:border-white/10 shadow-2xl">
 
-          {/* Badge Icon */}
-          <div className="mx-auto w-12 h-12 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-6">
-            <ShieldCheck className="h-6 w-6" />
+          <div className="mx-auto w-14 h-14 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mb-6 border border-purple-500/20">
+            <ShieldCheck className="h-7 w-7" />
           </div>
 
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
@@ -87,38 +79,35 @@ const AdminLogin = () => {
             Access the dashboard via passwordless verification code checks.
           </p>
 
-          {/* Success Status Banner */}
           {statusMessage && (
-            <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl text-emerald-700 dark:text-emerald-400 text-xs font-semibold text-left animate-fade-in-up">
+            <div className="mb-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-2xl text-purple-600 dark:text-purple-300 text-xs font-semibold text-left">
               {statusMessage}
             </div>
           )}
 
-          {/* Error Banner */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl flex items-center space-x-3 text-red-700 dark:text-red-400 text-left animate-fade-in-up">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center space-x-3 text-red-500 text-left">
               <AlertCircle className="h-5 w-5 flex-shrink-0" />
               <span className="text-xs font-semibold">{error}</span>
             </div>
           )}
 
-          {/* 1. Step 1: Input Email Form */}
           {!isOtpSent ? (
-            <form onSubmit={handleSendOtp} className="space-y-6 text-left animate-fade-in-up">
+            <form onSubmit={handleSendOtp} className="space-y-6 text-left">
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                   Admin Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                   <input
                     type="email"
                     id="email"
                     required
-                    placeholder="example123@gmail.com"
+                    placeholder="admin@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white transition-all text-sm"
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white text-sm outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
               </div>
@@ -126,7 +115,7 @@ const AdminLogin = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center w-full px-6 py-3.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md cursor-pointer hover-spring disabled:opacity-70 disabled:cursor-not-allowed"
+                className="flex items-center justify-center w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-purple-600/30 transition-all cursor-pointer disabled:opacity-70"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -139,30 +128,29 @@ const AdminLogin = () => {
               </button>
             </form>
           ) : (
-            /* 2. Step 2: Input Verification Code Form */
-            <form onSubmit={handleVerifyLogin} className="space-y-6 text-left animate-modal-content">
+            <form onSubmit={handleVerifyLogin} className="space-y-6 text-left">
               <div>
-                <label className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                   Verification Code (OTP)
                 </label>
                 <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                   <input
                     type="text"
                     required
                     maxLength={6}
-                    placeholder="Enter 6-digit code"
+                    placeholder="123456"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // accepts numbers only
-                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white transition-all text-sm tracking-widest font-mono text-center font-bold"
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 rounded-2xl text-slate-900 dark:text-white text-sm tracking-widest font-mono text-center font-bold outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-2">
-                  We've sent a 6-digit code to your local server terminal log. Please copy and enter it.
+                <p className="text-[11px] text-slate-400 mt-2">
+                  Enter the 6-digit code sent to your email inbox.
                 </p>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -171,7 +159,7 @@ const AdminLogin = () => {
                     setStatusMessage(null);
                     setOtp('');
                   }}
-                  className="flex items-center justify-center px-4 py-3 border border-slate-250 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-350 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-950/40 cursor-pointer"
+                  className="flex items-center justify-center px-4 py-3.5 border border-slate-300/40 dark:border-white/10 rounded-2xl text-slate-600 dark:text-slate-300 text-sm font-semibold hover:bg-slate-100/50 dark:hover:bg-white/5 cursor-pointer"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
@@ -179,7 +167,7 @@ const AdminLogin = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center justify-center flex-1 px-6 py-3.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md cursor-pointer hover-spring disabled:opacity-70"
+                  className="flex items-center justify-center flex-1 px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-purple-600/30 transition-all cursor-pointer disabled:opacity-70"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

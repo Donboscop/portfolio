@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Github, Linkedin, Twitter, Mail, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Github, Linkedin, Twitter, Mail, Eye, ShieldCheck } from 'lucide-react';
+import IconsaxIcon from './IconsaxIcon';
 
 const Footer = () => {
   const [visitorCount, setVisitorCount] = useState(null);
@@ -20,58 +22,63 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="border-t border-slate-200 dark:border-slate-800 bg-white/30 dark:bg-slate-950/30 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+    <footer className="border-t border-slate-200/50 dark:border-white/10 glass-panel backdrop-blur-xl py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
         
-        {/* Copy text */}
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          © {new Date().getFullYear()} MERN Developer Portfolio. All rights reserved.
-        </p>
+        {/* Brand & Copy */}
+        <div className="flex items-center space-x-3">
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+            © {new Date().getFullYear()} Don Bosco P Portfolio. Powered by PostgreSQL & AWS.
+          </p>
+        </div>
 
-        {/* Visitor counter badge with animations */}
+        {/* Visitor Counter Badge */}
         {visitorCount !== null && (
-          <div className="flex items-center space-x-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 px-3 py-1 rounded-full text-xs font-semibold text-blue-600 dark:text-blue-400 shadow-sm animate-pulse">
-            <Eye className="h-4 w-4" />
+          <div className="flex items-center space-x-2 bg-purple-500/10 border border-purple-500/20 px-3.5 py-1 rounded-full text-xs font-bold text-purple-600 dark:text-purple-300 shadow-sm">
+            <Eye className="h-3.5 w-3.5 text-purple-500 animate-pulse" />
             <span>Visitors: {visitorCount.toLocaleString()}</span>
           </div>
         )}
 
-        {/* Social Icons */}
-        <div className="flex space-x-6">
+        {/* Social Links & Admin Entry */}
+        <div className="flex items-center space-x-5">
           <a
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
             aria-label="GitHub Profile"
           >
             <Github className="h-5 w-5" />
           </a>
+
           <a
-            href="https://www.linkedin.com/in/don-bosco-29a4b52aa"
+            href="https://www.linkedin.com/in/don-bosco-29a4b52aa/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
             aria-label="LinkedIn Profile"
           >
             <Linkedin className="h-5 w-5" />
           </a>
-          <a
-            href="https://twitter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
-            aria-label="Twitter Profile"
-          >
-            <Twitter className="h-5 w-5" />
-          </a>
+
           <a
             href="mailto:donboscop24@gmail.com"
-            className="text-slate-400 hover:text-red-500 transition-colors"
+            className="text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
             aria-label="Email Address"
           >
             <Mail className="h-5 w-5" />
           </a>
+
+          {/* Direct Admin Login Entry */}
+          <Link
+            to="/admin"
+            className="flex items-center space-x-1.5 px-3 py-1 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-purple-500/10 transition-colors border border-transparent hover:border-purple-500/20"
+            title="Admin Login Portal"
+          >
+            <ShieldCheck className="h-4 w-4 text-purple-500" />
+            <span>Admin Portal</span>
+          </Link>
         </div>
       </div>
     </footer>

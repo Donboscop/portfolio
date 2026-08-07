@@ -236,7 +236,7 @@ const Certifications = () => {
         {[
           { id: 'all', label: 'All Certifications' },
           { id: 'practical', label: 'Internships & Training' },
-          { id: 'linkedIn', label: 'LinkedIn Learning (Java)' }
+          { id: 'linkedIn', label: 'LinkedIn Learning' }
         ].map((tab) => (
           <button
             key={tab.id}
@@ -453,7 +453,7 @@ const Certifications = () => {
                     className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   >
                     <option value="practical">Internship & Training</option>
-                    <option value="linkedIn">LinkedIn Learning (Java)</option>
+                    <option value="linkedIn">LinkedIn Learning</option>
                   </select>
                 </div>
               </div>

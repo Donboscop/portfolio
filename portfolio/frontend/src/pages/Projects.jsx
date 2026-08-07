@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Github, ExternalLink, ArrowRight, BookOpen, AlertCircle, Plus, Edit2, Trash2, X, Save, Sparkles } from 'lucide-react';
+import { Search, Plus, X, Save, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import AnimeWrapper from '../components/AnimeWrapper';
+import ProjectCard from '../components/ProjectCard';
+import IconsaxIcon from '../components/IconsaxIcon';
 import '../components/CustomAnimation.css';
 
 const Projects = () => {
@@ -11,13 +13,11 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Filtering states
   const [search, setSearch] = useState('');
   const [activeTech, setActiveTech] = useState('');
 
-  // Modal and form states for inline editing
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState(null); // null means adding a new project
+  const [editingProject, setEditingProject] = useState(null);
   const [projectForm, setProjectForm] = useState({
     title: '',
     description: '',
@@ -27,14 +27,14 @@ const Projects = () => {
     features: '',
     challengesFaced: '',
     learningOutcomes: '',
+    category: 'Web',
     existingImages: []
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
 
-  // List of standard technologies for quick filtering
-  const quickFilters = ['React', 'Node', 'Express', 'MongoDB', 'Tailwind', 'TypeScript'];
+  const quickFilters = ['React', 'Node', 'PostgreSQL', 'Express', 'Tailwind', 'AWS'];
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -70,7 +70,6 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    // Add brief debounce for search input
     const delayDebounce = setTimeout(() => {
       fetchProjects();
     }, 300);
@@ -82,7 +81,6 @@ const Projects = () => {
     setActiveTech(prev => (prev === tech ? '' : tech));
   };
 
-  // Setup form for creating
   const startAddProject = () => {
     setEditingProject(null);
     setProjectForm({
@@ -94,6 +92,7 @@ const Projects = () => {
       features: '',
       challengesFaced: '',
       learningOutcomes: '',
+      category: 'Web',
       existingImages: []
     });
     setSelectedFiles([]);
@@ -101,18 +100,18 @@ const Projects = () => {
     setIsModalOpen(true);
   };
 
-  // Setup form for editing
   const startEditProject = (proj) => {
     setEditingProject(proj);
     setProjectForm({
       title: proj.title || '',
       description: proj.description || '',
-      technologies: proj.technologies ? proj.technologies.join(', ') : '',
-      githubLink: proj.githubLink || '',
-      liveLink: proj.liveLink || '',
-      features: proj.features ? proj.features.join(', ') : '',
-      challengesFaced: proj.challengesFaced || '',
-      learningOutcomes: proj.learningOutcomes || '',
+      technologies: Array.isArray(proj.technologies) ? proj.technologies.join(', ') : (proj.technologies || ''),
+      githubLink: proj.githubLink || proj.github_url || '',
+      liveLink: proj.liveLink || proj.demo_url || '',
+      features: Array.isArray(proj.features) ? proj.features.join(', ') : (proj.features || ''),
+      challengesFaced: proj.challengesFaced || proj.challenges_faced || '',
+      learningOutcomes: proj.learningOutcomes || proj.learning_outcomes || '',
+      category: proj.category || 'Web',
       existingImages: proj.images || []
     });
     setSelectedFiles([]);
@@ -120,497 +119,271 @@ const Projects = () => {
     setIsModalOpen(true);
   };
 
-  // Form input changes handler
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProjectForm(prev => ({ ...prev, [name]: value }));
+  const handleDeleteProject = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this project?')) return;
+    try {
+      const res = await authFetch(`/api/projects/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Failed to delete project');
+      }
+      fetchProjects();
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
-  // Files change handler
-  const handleFileChange = (e) => {
-    setSelectedFiles(Array.from(e.target.files));
-  };
-
-  // Remove existing image locally in form state
-  const handleRemoveExistingImage = (idx) => {
-    setProjectForm(prev => ({
-      ...prev,
-      existingImages: prev.existingImages.filter((_, i) => i !== idx)
-    }));
-  };
-
-  // Form submit handler
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitting(true);
     setFormError(null);
 
-    // Construct FormData for multipart images support
-    const formData = new FormData();
-    formData.append('title', projectForm.title);
-    formData.append('description', projectForm.description);
-    formData.append('technologies', projectForm.technologies);
-    formData.append('githubLink', projectForm.githubLink);
-    formData.append('liveLink', projectForm.liveLink);
-    formData.append('features', projectForm.features);
-    formData.append('challengesFaced', projectForm.challengesFaced);
-    formData.append('learningOutcomes', projectForm.learningOutcomes);
-    
-    // Append existing images that weren't deleted
-    projectForm.existingImages.forEach(img => {
-      formData.append('existingImages', img);
-    });
-
-    // Append new uploaded files
-    selectedFiles.forEach(file => {
-      formData.append('images', file);
-    });
-
     try {
-      const url = editingProject ? `/api/projects/${editingProject._id}` : '/api/projects';
+      const formData = new FormData();
+      formData.append('title', projectForm.title);
+      formData.append('description', projectForm.description);
+      formData.append('technologies', projectForm.technologies);
+      formData.append('githubLink', projectForm.githubLink);
+      formData.append('liveLink', projectForm.liveLink);
+      formData.append('features', projectForm.features);
+      formData.append('challengesFaced', projectForm.challengesFaced);
+      formData.append('learningOutcomes', projectForm.learningOutcomes);
+      formData.append('category', projectForm.category);
+
+      projectForm.existingImages.forEach(img => {
+        formData.append('existingImages', img);
+      });
+
+      selectedFiles.forEach(file => {
+        formData.append('images', file);
+      });
+
+      const url = editingProject ? `/api/projects/${editingProject.id || editingProject._id}` : '/api/projects';
       const method = editingProject ? 'PUT' : 'POST';
 
       const res = await authFetch(url, {
         method,
-        body: formData // Note: Content-Type header is omitted so boundary is automatically set
+        body: formData
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to save project. Verify details.');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Operation failed');
       }
 
       setIsModalOpen(false);
       fetchProjects();
     } catch (err) {
-      console.error(err);
       setFormError(err.message);
     } finally {
       setFormSubmitting(false);
     }
   };
 
-  // Delete project trigger
-  const handleDeleteProject = async (id) => {
-    if (!window.confirm('Are you sure you want to permanently delete this project?')) return;
-
-    try {
-      const res = await authFetch(`/api/projects/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (res.ok) {
-        fetchProjects();
-      } else {
-        const data = await res.json();
-        alert(data.message || 'Failed to delete project');
-      }
-    } catch (err) {
-      console.error('Delete error:', err);
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 animate-fade-in-up">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          My <span className="text-gradient">Projects</span>
-        </h2>
-        <p className="mt-4 text-lg text-slate-650 dark:text-slate-400">
-          Explore my latest developments, open source contributions, and web applications.
-        </p>
+    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Header Title */}
+      <AnimeWrapper animationType="fadeUp" delay={100}>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
+              Adri Fluid Portfolio
+            </span>
+            <h1 className="fluid-heading-lg mt-3 text-slate-900 dark:text-white">
+              Featured Projects
+            </h1>
+            <p className="mt-2 text-base text-slate-600 dark:text-slate-400 max-w-xl">
+              Explore full-stack web applications, PostgreSQL schemas, and interactive cloud systems.
+            </p>
+          </div>
 
-        {/* Admin Add Button */}
-        {isAuthenticated && (
-          <div className="mt-6 flex justify-center animate-fade-in-up">
+          {isAuthenticated && (
             <button
               onClick={startAddProject}
-              className="flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md hover-spring cursor-pointer"
+              className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center space-x-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
             >
-              <Plus className="mr-2 h-4 w-4" /> Add Project
+              <Plus size={18} />
+              <span>Add New Project</span>
             </button>
-          </div>
-        )}
-      </div>
-
-      {/* Search and Filters Bar */}
-      <div className="max-w-4xl mx-auto mb-10 space-y-4">
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
-          <input
-            type="text"
-            placeholder="Search projects by name, description, or technology..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 transition-all text-slate-950 dark:text-white"
-          />
+          )}
         </div>
+      </AnimeWrapper>
 
-        {/* Quick Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-2">
-          <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 mr-2">Filter by Tech:</span>
-          {quickFilters.map(tech => {
-            const isSelected = activeTech.toLowerCase() === tech.toLowerCase();
-            return (
+      {/* Filter and Search Bar */}
+      <AnimeWrapper animationType="fadeUp" delay={200}>
+        <div className="glass-panel p-4 rounded-3xl mb-12 border border-slate-200/50 dark:border-white/10 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-transparent focus:border-purple-500 text-sm text-slate-900 dark:text-white outline-none transition-colors"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            {quickFilters.map((tech) => (
               <button
                 key={tech}
                 onClick={() => handleTechClick(tech)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-sm shadow-blue-500/20'
-                    : 'glass-panel text-slate-650 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900'
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  activeTech === tech
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'bg-purple-500/10 text-purple-600 dark:text-purple-300 hover:bg-purple-500/20'
                 }`}
               >
                 {tech}
               </button>
-            );
-          })}
-          {activeTech && (
-            <button
-              onClick={() => setActiveTech('')}
-              className="text-xs font-semibold text-red-500 hover:underline cursor-pointer"
-            >
-              Clear Filter
-            </button>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      </AnimeWrapper>
 
-      {/* Grid Content */}
+      {/* Projects Grid */}
       {loading ? (
-        // Skeleton Loader
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="glass-panel p-6 rounded-2xl h-80 animate-pulse flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-2/3"></div>
-                <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
-              </div>
-              <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-full mt-4"></div>
-            </div>
-          ))}
-        </div>
+        <div className="py-20 text-center text-slate-500">Loading projects...</div>
       ) : error ? (
-        <div className="text-center p-12 glass-panel max-w-lg mx-auto rounded-2xl">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Error Loading Projects</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{error}</p>
+        <div className="py-20 text-center text-red-500 flex items-center justify-center space-x-2">
+          <AlertCircle size={20} />
+          <span>{error}</span>
         </div>
       ) : projects.length === 0 ? (
-        <div className="text-center p-12 glass-panel max-w-lg mx-auto rounded-2xl">
-          <BookOpen className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No Projects Found</h3>
-          <p className="text-sm text-slate-650 dark:text-slate-400 mb-6">
-            We couldn't find any projects matching your search criteria.
-          </p>
-          <Link
-            to="/admin"
-            className="inline-flex items-center px-5 py-2.5 bg-blue-600 dark:bg-blue-500 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Login to Admin Dashboard to add some
-          </Link>
+        <div className="py-20 text-center text-slate-500 glass-panel rounded-3xl">
+          No projects match your filter criteria.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map(project => (
-            <div
-              key={project._id}
-              className="glass-panel rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm hover:shadow-lg transition-all duration-300 glow-border hover-spring relative"
-            >
-              <div>
-                {/* Project Image Panel */}
-                <div className="h-48 overflow-hidden bg-slate-100 dark:bg-slate-900 relative">
-                  {project.images && project.images.length > 0 ? (
-                    <img
-                      src={project.images[0]}
-                      alt={project.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop&q=60';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600">
-                      No Image Available
-                    </div>
-                  )}
-
-                  {/* Float Edit & Delete badges for Admin */}
-                  {isAuthenticated && (
-                    <div className="absolute top-3 right-3 flex gap-2 z-10">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          startEditProject(project);
-                        }}
-                        className="p-2 bg-white/90 dark:bg-slate-900/90 text-blue-600 dark:text-blue-450 hover:bg-white dark:hover:bg-slate-900 rounded-lg shadow-sm cursor-pointer transition-all"
-                        title="Edit project"
-                      >
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleDeleteProject(project._id);
-                        }}
-                        className="p-2 bg-white/90 dark:bg-slate-900/90 text-red-650 dark:text-red-405 hover:bg-white dark:hover:bg-slate-955 rounded-lg shadow-sm cursor-pointer transition-all"
-                        title="Delete project"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Floating Tech Badges */}
-                  <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-                    {project.technologies.slice(0, 3).map(tech => (
-                      <span
-                        key={tech}
-                        className="px-2 py-0.5 bg-slate-950/70 text-white rounded text-[10px] font-semibold uppercase tracking-wider backdrop-blur-[2px]"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                    {project.technologies.length > 3 && (
-                      <span className="px-2 py-0.5 bg-slate-950/70 text-white rounded text-[10px] font-semibold backdrop-blur-[2px]">
-                        +{project.technologies.length - 3}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">
-                    {project.title}
-                  </h3>
-                  <p className="text-sm text-slate-650 dark:text-slate-400 line-clamp-3 leading-relaxed mb-4">
-                    {project.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="px-6 pb-6 pt-2 border-t border-slate-100 dark:border-slate-900/50 flex items-center justify-between">
-                <div className="flex space-x-3">
-                  {project.githubLink && (
-                    <a
-                      href={project.githubLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 text-slate-500 hover:text-slate-950 dark:hover:text-white transition-colors"
-                      title="GitHub Repository"
-                    >
-                      <Github className="h-5 w-5" />
-                    </a>
-                  )}
-                  {project.liveLink && (
-                    <a
-                      href={project.liveLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                      title="Live Deployment"
-                    >
-                      <ExternalLink className="h-5 w-5" />
-                    </a>
-                  )}
-                </div>
-                <Link
-                  to={`/project/${project._id}`}
-                  className="inline-flex items-center text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  View Details
-                  <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
+        <AnimeWrapper animationType="staggerChildren" delay={300} stagger={100} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projects.map((proj) => (
+            <ProjectCard
+              key={proj.id || proj._id}
+              project={proj}
+              isAuthenticated={isAuthenticated}
+              onEdit={startEditProject}
+              onDelete={handleDeleteProject}
+            />
           ))}
-        </div>
+        </AnimeWrapper>
       )}
 
-      {/* Edit/Add Modal Overlay */}
+      {/* Modal for Add / Edit */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-modal-backdrop">
-          <div className="glass-panel w-full max-w-3xl rounded-2xl p-6 sm:p-8 relative shadow-2xl animate-modal-content border border-slate-200/50 dark:border-slate-800/50 overflow-y-auto max-h-[90vh]">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg transition-colors cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center">
-              <Sparkles className="text-blue-600 dark:text-blue-400 mr-2 h-5 w-5" />
-              {editingProject ? 'Edit Project Record' : 'Add Project to Portfolio'}
-            </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-200/40 dark:border-white/10">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                {editingProject ? 'Edit Project' : 'Add New Project'}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             {formError && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-sm font-semibold text-red-700 dark:text-red-400 animate-fade-in-up">
+              <div className="mt-4 p-3 rounded-xl bg-red-500/10 text-red-500 text-sm border border-red-500/20">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleFormSubmit} className="space-y-5">
-              {/* Form fields grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Project Name</label>
-                  <input
-                    type="text"
-                    name="title"
-                    required
-                    value={projectForm.title}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Technologies Used (Comma-separated)</label>
-                  <input
-                    type="text"
-                    name="technologies"
-                    placeholder="e.g. React, Node.js, Express, MongoDB"
-                    value={projectForm.technologies}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
+            <form onSubmit={handleFormSubmit} className="mt-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Short Description</label>
-                <textarea
-                  name="description"
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Title</label>
+                <input
+                  type="text"
                   required
-                  rows="3"
-                  value={projectForm.description}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                ></textarea>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">GitHub Repository Link</label>
-                  <input
-                    type="url"
-                    name="githubLink"
-                    value={projectForm.githubLink}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Live Deployment Link</label>
-                  <input
-                    type="url"
-                    name="liveLink"
-                    value={projectForm.liveLink}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
+                  value={projectForm.title}
+                  onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none"
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Key Features (Comma-separated)</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Description</label>
                 <textarea
-                  name="features"
-                  rows="2"
-                  placeholder="e.g. JWT Auth integration, Dark mode support, Responsive panels"
-                  value={projectForm.features}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                ></textarea>
+                  rows={3}
+                  required
+                  value={projectForm.description}
+                  onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none"
+                />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Challenges Faced</label>
-                  <textarea
-                    name="challengesFaced"
-                    rows="3"
-                    value={projectForm.challengesFaced}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  ></textarea>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Technologies (comma separated)</label>
+                  <input
+                    type="text"
+                    value={projectForm.technologies}
+                    onChange={(e) => setProjectForm({ ...projectForm, technologies: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none"
+                  />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Learning Outcomes</label>
-                  <textarea
-                    name="learningOutcomes"
-                    rows="3"
-                    value={projectForm.learningOutcomes}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  ></textarea>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Category</label>
+                  <select
+                    value={projectForm.category}
+                    onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none"
+                  >
+                    <option value="Web">Web Application</option>
+                    <option value="Mobile">Mobile App</option>
+                    <option value="PostgreSQL">PostgreSQL / Cloud</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
               </div>
 
-              {/* Upload Image management */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">GitHub Link</label>
+                  <input
+                    type="url"
+                    value={projectForm.githubLink}
+                    onChange={(e) => setProjectForm({ ...projectForm, githubLink: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Live Demo Link</label>
+                  <input
+                    type="url"
+                    value={projectForm.liveLink}
+                    onChange={(e) => setProjectForm({ ...projectForm, liveLink: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Project Screenshot Images</label>
-                
-                {/* Current images checklist with delete buttons */}
-                {projectForm.existingImages && projectForm.existingImages.length > 0 && (
-                  <div className="flex flex-wrap gap-4 mb-4">
-                    {projectForm.existingImages.map((img, idx) => (
-                      <div key={idx} className="relative w-24 h-16 border border-slate-200 dark:border-slate-800 rounded overflow-hidden bg-slate-50">
-                        <img src={img} className="w-full h-full object-cover" alt="existing screenshot" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveExistingImage(idx)}
-                          className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-650 text-white rounded-full p-1 cursor-pointer"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Multer Local File Upload input */}
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Images (Upload files)</label>
                 <input
                   type="file"
                   multiple
                   accept="image/*"
-                  onChange={handleFileChange}
-                  className="w-full text-sm text-slate-550 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-950/40 dark:file:text-blue-400 file:cursor-pointer"
+                  onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+                  className="w-full text-sm text-slate-400"
                 />
-                <p className="text-[10px] font-medium text-slate-450 mt-2">
-                  Supports JPG, PNG, WEBP. Max size 5MB. You can select up to 5 files at once.
-                </p>
               </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-4 pt-4 justify-end border-t border-slate-100 dark:border-slate-900/50">
+              <div className="pt-4 flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-650 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-950/40 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl border border-slate-400/40 text-slate-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={formSubmitting}
-                  className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-70 cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center space-x-2"
                 >
-                  {formSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    <>
-                      <Save className="mr-1.5 h-4 w-4" /> Save Project
-                    </>
-                  )}
+                  <Save size={16} />
+                  <span>{formSubmitting ? 'Saving...' : 'Save Project'}</span>
                 </button>
               </div>
             </form>

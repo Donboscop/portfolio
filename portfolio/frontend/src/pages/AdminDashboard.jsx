@@ -16,23 +16,38 @@ import {
   Layers,
   ArrowUpRight,
   Sparkles,
-  Award
+  Award,
+  Briefcase,
+  Code2,
+  CheckCircle,
+  ExternalLink,
+  Upload
 } from 'lucide-react';
+import IconsaxIcon from '../components/IconsaxIcon';
+import AnimeWrapper from '../components/AnimeWrapper';
 import '../components/CustomAnimation.css';
 
 const AdminDashboard = () => {
   const { authFetch } = useAuth();
   
-  // Dashboard navigation tab state
+  // Dashboard navigation tabs
   const [activeTab, setActiveTab] = useState('projects');
   
-  // Projects data & UI states
+  // Stats
+  const [stats, setStats] = useState({
+    visitorCount: 0,
+    projectCount: 0,
+    skillCount: 0,
+    certCount: 0,
+    milestoneCount: 0,
+    messageCount: 0
+  });
+
+  // Projects State
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState(null); // null means adding a new project
-  
-  // Project form fields
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
   const [projectForm, setProjectForm] = useState({
     title: '',
     description: '',
@@ -42,25 +57,42 @@ const AdminDashboard = () => {
     features: '',
     challengesFaced: '',
     learningOutcomes: '',
+    category: 'Web',
     existingImages: []
   });
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [formError, setFormError] = useState(null);
+  const [selectedProjectFiles, setSelectedProjectFiles] = useState([]);
+  const [projectSubmitting, setProjectSubmitting] = useState(false);
+  const [projectError, setProjectError] = useState(null);
 
-  // Messages data states
+  // Skills State
+  const [skills, setSkills] = useState([]);
+  const [loadingSkills, setLoadingSkills] = useState(true);
+  const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
+  const [editingSkill, setEditingSkill] = useState(null);
+  const [skillForm, setSkillForm] = useState({ name: '', level: 85, category: 'frontend', icon: 'code' });
+  const [skillSubmitting, setSkillSubmitting] = useState(false);
+
+  // Certifications State
+  const [certifications, setCertifications] = useState([]);
+  const [loadingCerts, setLoadingCerts] = useState(true);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [certForm, setCertForm] = useState({ title: '', issuer: '', date: '', credentialId: '', verifyUrl: '', category: 'practical', description: '' });
+  const [certFile, setCertFile] = useState(null);
+  const [certSubmitting, setCertSubmitting] = useState(false);
+
+  // Milestones State
+  const [milestones, setMilestones] = useState([]);
+  const [loadingMilestones, setLoadingMilestones] = useState(true);
+  const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [editingMilestone, setEditingMilestone] = useState(null);
+  const [milestoneForm, setMilestoneForm] = useState({ year: '', title: '', company: '', description: '', icon: 'briefcase' });
+  const [milestoneSubmitting, setMilestoneSubmitting] = useState(false);
+
+  // Messages State
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
 
-  // Analytics states
-  const [stats, setStats] = useState({
-    visitorCount: 0,
-    projectCount: 0,
-    messageCount: 0
-  });
-  const [certCount, setCertCount] = useState(0);
-
-  // Fetch initial data
+  // Fetch functions
   const fetchProjects = async () => {
     setLoadingProjects(true);
     try {
@@ -68,13 +100,60 @@ const AdminDashboard = () => {
       if (res.ok) {
         const data = await res.json();
         setProjects(data);
-        // Update local stats preview
         setStats(prev => ({ ...prev, projectCount: data.length }));
       }
     } catch (err) {
-      console.error('Error loading projects:', err);
+      console.error(err);
     } finally {
       setLoadingProjects(false);
+    }
+  };
+
+  const fetchSkills = async () => {
+    setLoadingSkills(true);
+    try {
+      const res = await fetch('/api/skills');
+      if (res.ok) {
+        const data = await res.json();
+        setSkills(data);
+        setStats(prev => ({ ...prev, skillCount: data.length }));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingSkills(false);
+    }
+  };
+
+  const fetchCertifications = async () => {
+    setLoadingCerts(true);
+    try {
+      const res = await fetch('/api/certifications');
+      if (res.ok) {
+        const data = await res.json();
+        setCertifications(data);
+        setStats(prev => ({ ...prev, certCount: data.length }));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingCerts(false);
+    }
+  };
+
+  const fetchMilestones = async () => {
+    setLoadingMilestones(true);
+    try {
+      const res = await fetch('/api/milestones');
+      if (res.ok) {
+        const data = await res.json();
+        setMilestones(data);
+        setStats(prev => ({ ...prev, milestoneCount: data.length }));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMilestones(false);
     }
   };
 
@@ -88,7 +167,7 @@ const AdminDashboard = () => {
         setStats(prev => ({ ...prev, messageCount: data.length }));
       }
     } catch (err) {
-      console.error('Error loading messages:', err);
+      console.error(err);
     } finally {
       setLoadingMessages(false);
     }
@@ -102,103 +181,52 @@ const AdminDashboard = () => {
         setStats(prev => ({ ...prev, visitorCount: data.count }));
       }
     } catch (err) {
-      console.error('Error loading analytics:', err);
-    }
-  };
-
-  const fetchCertCount = async () => {
-    try {
-      const res = await fetch('/api/certifications');
-      if (res.ok) {
-        const data = await res.json();
-        setCertCount(data.length);
-      }
-    } catch (err) {
-      console.error('Error loading cert count:', err);
+      console.error(err);
     }
   };
 
   useEffect(() => {
     fetchProjects();
+    fetchSkills();
+    fetchCertifications();
+    fetchMilestones();
     fetchMessages();
     fetchVisitorStats();
-    fetchCertCount();
   }, []);
 
-  // Handle Tab switches
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (tab === 'projects') fetchProjects();
-    if (tab === 'messages') fetchMessages();
-    if (tab === 'analytics') {
-      fetchProjects();
-      fetchMessages();
-      fetchVisitorStats();
-      fetchCertCount();
-    }
+  // --- PROJECT HANDLERS ---
+  const startAddProject = () => {
+    setEditingProject(null);
+    setProjectForm({ title: '', description: '', technologies: '', githubLink: '', liveLink: '', features: '', challengesFaced: '', learningOutcomes: '', category: 'Web', existingImages: [] });
+    setSelectedProjectFiles([]);
+    setProjectError(null);
+    setIsProjectModalOpen(true);
   };
 
-  // Setup form for editing
   const startEditProject = (proj) => {
     setEditingProject(proj);
     setProjectForm({
       title: proj.title || '',
       description: proj.description || '',
-      technologies: proj.technologies ? proj.technologies.join(', ') : '',
-      githubLink: proj.githubLink || '',
-      liveLink: proj.liveLink || '',
-      features: proj.features ? proj.features.join(', ') : '',
-      challengesFaced: proj.challengesFaced || '',
-      learningOutcomes: proj.learningOutcomes || '',
+      technologies: Array.isArray(proj.technologies) ? proj.technologies.join(', ') : (proj.technologies || ''),
+      githubLink: proj.githubLink || proj.github_url || '',
+      liveLink: proj.liveLink || proj.demo_url || '',
+      features: Array.isArray(proj.features) ? proj.features.join(', ') : (proj.features || ''),
+      challengesFaced: proj.challengesFaced || proj.challenges_faced || '',
+      learningOutcomes: proj.learningOutcomes || proj.learning_outcomes || '',
+      category: proj.category || 'Web',
       existingImages: proj.images || []
     });
-    setSelectedFiles([]);
-    setFormError(null);
-    setIsFormOpen(true);
+    setSelectedProjectFiles([]);
+    setProjectError(null);
+    setIsProjectModalOpen(true);
   };
 
-  // Setup form for creating
-  const startAddProject = () => {
-    setEditingProject(null);
-    setProjectForm({
-      title: '',
-      description: '',
-      technologies: '',
-      githubLink: '',
-      liveLink: '',
-      features: '',
-      challengesFaced: '',
-      learningOutcomes: '',
-      existingImages: []
-    });
-    setSelectedFiles([]);
-    setFormError(null);
-    setIsFormOpen(true);
-  };
-
-  // Form handlers
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProjectForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    setSelectedFiles(Array.from(e.target.files));
-  };
-
-  const handleRemoveExistingImage = (idx) => {
-    setProjectForm(prev => ({
-      ...prev,
-      existingImages: prev.existingImages.filter((_, i) => i !== idx)
-    }));
-  };
-
-  const handleFormSubmit = async (e) => {
+  const handleProjectSubmit = async (e) => {
     e.preventDefault();
-    setFormSubmitting(true);
-    setFormError(null);
+    setProjectSubmitting(true);
+    setProjectError(null);
 
-    // Construct FormData for multipart images support
     const formData = new FormData();
     formData.append('title', projectForm.title);
     formData.append('description', projectForm.description);
@@ -208,511 +236,624 @@ const AdminDashboard = () => {
     formData.append('features', projectForm.features);
     formData.append('challengesFaced', projectForm.challengesFaced);
     formData.append('learningOutcomes', projectForm.learningOutcomes);
-    
-    // Append existing images that weren't deleted
-    projectForm.existingImages.forEach(img => {
-      formData.append('existingImages', img);
-    });
+    formData.append('category', projectForm.category);
 
-    // Append new uploaded files
-    selectedFiles.forEach(file => {
-      formData.append('images', file);
-    });
+    projectForm.existingImages.forEach(img => formData.append('existingImages', img));
+    selectedProjectFiles.forEach(file => formData.append('images', file));
 
     try {
-      const url = editingProject ? `/api/projects/${editingProject._id}` : '/api/projects';
+      const projId = editingProject ? (editingProject.id || editingProject._id) : '';
+      const url = editingProject ? `/api/projects/${projId}` : '/api/projects';
       const method = editingProject ? 'PUT' : 'POST';
+
+      const res = await authFetch(url, { method, body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to save project');
+
+      setIsProjectModalOpen(false);
+      fetchProjects();
+    } catch (err) {
+      setProjectError(err.message);
+    } finally {
+      setProjectSubmitting(false);
+    }
+  };
+
+  const handleDeleteProject = async (id) => {
+    if (!window.confirm('Delete this project permanently?')) return;
+    try {
+      const res = await authFetch(`/api/projects/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchProjects();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // --- SKILL HANDLERS ---
+  const handleSkillSubmit = async (e) => {
+    e.preventDefault();
+    setSkillSubmitting(true);
+    try {
+      const skillId = editingSkill ? (editingSkill.id || editingSkill._id) : '';
+      const url = editingSkill ? `/api/skills/${skillId}` : '/api/skills';
+      const method = editingSkill ? 'PUT' : 'POST';
 
       const res = await authFetch(url, {
         method,
-        body: formData // Note: Content-Type header is omitted so the browser automatically sets the boundary
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(skillForm)
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to save project. Verify details.');
+      if (res.ok) {
+        setIsSkillModalOpen(false);
+        fetchSkills();
       }
-
-      setIsFormOpen(false);
-      fetchProjects();
     } catch (err) {
-      console.error(err);
-      setFormError(err.message);
+      alert(err.message);
     } finally {
-      setFormSubmitting(false);
+      setSkillSubmitting(false);
     }
   };
 
-  // Delete project trigger
-  const handleDeleteProject = async (id) => {
-    if (!window.confirm('Are you sure you want to permanently delete this project?')) return;
-
+  const handleDeleteSkill = async (id) => {
+    if (!window.confirm('Delete this skill?')) return;
     try {
-      const res = await authFetch(`/api/projects/${id}`, {
-        method: 'DELETE'
-      });
+      const res = await authFetch(`/api/skills/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchSkills();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
+  // --- CERTIFICATION HANDLERS ---
+  const handleCertSubmit = async (e) => {
+    e.preventDefault();
+    if (!certFile) {
+      alert('Please select a certificate file (PDF or Image)');
+      return;
+    }
+    setCertSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('title', certForm.title);
+      formData.append('issuer', certForm.issuer);
+      formData.append('date', certForm.date);
+      formData.append('credentialId', certForm.credentialId);
+      formData.append('verifyUrl', certForm.verifyUrl);
+      formData.append('category', certForm.category);
+      formData.append('description', certForm.description);
+      formData.append('file', certFile);
+
+      const res = await authFetch('/api/certifications', { method: 'POST', body: formData });
       if (res.ok) {
-        fetchProjects();
+        setIsCertModalOpen(false);
+        setCertFile(null);
+        fetchCertifications();
       } else {
         const data = await res.json();
-        alert(data.message || 'Failed to delete project');
+        alert(data.message || 'Failed to add certification');
       }
     } catch (err) {
-      console.error('Delete error:', err);
+      alert(err.message);
+    } finally {
+      setCertSubmitting(false);
     }
   };
 
-  // Delete Message trigger
+  const handleDeleteCert = async (id) => {
+    if (!window.confirm('Delete this certificate?')) return;
+    try {
+      const res = await authFetch(`/api/certifications/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchCertifications();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // --- MILESTONE HANDLERS ---
+  const handleMilestoneSubmit = async (e) => {
+    e.preventDefault();
+    setMilestoneSubmitting(true);
+    try {
+      const msId = editingMilestone ? (editingMilestone.id || editingMilestone._id) : '';
+      const url = editingMilestone ? `/api/milestones/${msId}` : '/api/milestones';
+      const method = editingMilestone ? 'PUT' : 'POST';
+
+      const res = await authFetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(milestoneForm)
+      });
+      if (res.ok) {
+        setIsMilestoneModalOpen(false);
+        fetchMilestones();
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setMilestoneSubmitting(false);
+    }
+  };
+
+  const handleDeleteMilestone = async (id) => {
+    if (!window.confirm('Delete this milestone?')) return;
+    try {
+      const res = await authFetch(`/api/milestones/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchMilestones();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // --- MESSAGE HANDLERS ---
   const handleDeleteMessage = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this message?')) return;
-
+    if (!window.confirm('Delete message?')) return;
     try {
-      const res = await authFetch(`/api/messages/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (res.ok) {
-        fetchMessages();
-      } else {
-        const data = await res.json();
-        alert(data.message || 'Failed to delete message');
-      }
+      const res = await authFetch(`/api/messages/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchMessages();
     } catch (err) {
-      console.error('Delete error:', err);
+      alert(err.message);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      {/* Dashboard title banner */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-200 dark:border-slate-800 pb-6">
-        <div>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white flex items-center">
-            <Sparkles className="text-blue-600 dark:text-blue-400 mr-2 h-6 w-6" />
-            Admin Control Center
-          </h2>
-          <p className="mt-1 text-slate-550 dark:text-slate-400 text-sm">
-            Maintain project assets, read incoming messages, and audit visitor analytics.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            to="/certifications"
-            className="flex items-center px-4 py-2 border border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-50/20 dark:bg-blue-950/25 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 rounded-xl text-sm font-semibold shadow-sm transition-all duration-300 hover-spring cursor-pointer animate-fade-in-up"
-          >
-            <Award className="mr-1.5 h-4 w-4" /> Manage Certifications
-          </Link>
-        </div>
-      </div>
-
-      {/* Main dashboard tabs navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8 overflow-x-auto">
-        <button
-          onClick={() => handleTabChange('projects')}
-          className={`flex items-center space-x-2 px-6 py-3 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${
-            activeTab === 'projects'
-              ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <FolderKanban className="h-4 w-4" />
-          <span>Projects</span>
-        </button>
-        <button
-          onClick={() => handleTabChange('messages')}
-          className={`flex items-center space-x-2 px-6 py-3 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${
-            activeTab === 'messages'
-              ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <MessageSquare className="h-4 w-4" />
-          <span>Messages</span>
-        </button>
-        <button
-          onClick={() => handleTabChange('analytics')}
-          className={`flex items-center space-x-2 px-6 py-3 border-b-2 font-semibold text-sm transition-colors cursor-pointer ${
-            activeTab === 'analytics'
-              ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <BarChart3 className="h-4 w-4" />
-          <span>Analytics</span>
-        </button>
-      </div>
-
-      {/* TAB PANEL CONTENT */}
-      
-      {/* 1. PROJECTS TAB PANEL */}
-      {activeTab === 'projects' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Portfolio Projects</h3>
-            <button
-              onClick={startAddProject}
-              className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-sm hover-spring cursor-pointer"
-            >
-              <Plus className="mr-1.5 h-4 w-4" /> Add Project
-            </button>
+    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <AnimeWrapper animationType="fadeUp" delay={100}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
+              Admin Portal
+            </span>
+            <h1 className="fluid-heading-lg mt-2 text-slate-900 dark:text-white">
+              Dynamic CMS Dashboard
+            </h1>
           </div>
 
-          {/* Inline Form View */}
-          {isFormOpen && (
-            <div className="glass-panel p-6 sm:p-8 rounded-2xl border-2 border-blue-500/20 relative animate-fade-in-up">
+          {/* Quick Metrics Strip */}
+          <div className="flex flex-wrap gap-3">
+            <div className="glass-panel px-4 py-2 rounded-2xl flex items-center space-x-2 border border-purple-500/20">
+              <FolderKanban className="h-4 w-4 text-purple-500" />
+              <span className="text-xs font-bold">{stats.projectCount} Projects</span>
+            </div>
+            <div className="glass-panel px-4 py-2 rounded-2xl flex items-center space-x-2 border border-pink-500/20">
+              <Code2 className="h-4 w-4 text-pink-500" />
+              <span className="text-xs font-bold">{stats.skillCount} Skills</span>
+            </div>
+            <div className="glass-panel px-4 py-2 rounded-2xl flex items-center space-x-2 border border-emerald-500/20">
+              <Award className="h-4 w-4 text-emerald-500" />
+              <span className="text-xs font-bold">{stats.certCount} Certs</span>
+            </div>
+            <div className="glass-panel px-4 py-2 rounded-2xl flex items-center space-x-2 border border-indigo-500/20">
+              <MessageSquare className="h-4 w-4 text-indigo-500" />
+              <span className="text-xs font-bold">{stats.messageCount} Messages</span>
+            </div>
+          </div>
+        </div>
+      </AnimeWrapper>
+
+      {/* Navigation Tabs */}
+      <AnimeWrapper animationType="fadeUp" delay={150}>
+        <div className="flex flex-wrap gap-2 mb-8 glass-panel p-2 rounded-2xl border border-slate-200/50 dark:border-white/10">
+          {[
+            { id: 'projects', label: 'Projects', icon: FolderKanban },
+            { id: 'skills', label: 'Skills', icon: Code2 },
+            { id: 'certs', label: 'Certifications', icon: Award },
+            { id: 'milestones', label: 'Milestones', icon: Briefcase },
+            { id: 'messages', label: 'Messages', icon: MessageSquare },
+            { id: 'analytics', label: 'Analytics', icon: BarChart3 }
+          ].map(tab => {
+            const IconComp = tab.icon;
+            return (
               <button
-                onClick={() => setIsFormOpen(false)}
-                className="absolute top-4 right-4 p-1.5 text-slate-450 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-md cursor-pointer"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center space-x-2 transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-purple-500/10'
+                }`}
               >
-                <X className="h-5 w-5" />
+                <IconComp className="h-4 w-4" />
+                <span>{tab.label}</span>
               </button>
-              
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-6">
-                {editingProject ? `Edit Project: ${editingProject.title}` : 'Add New Project'}
-              </h4>
+            );
+          })}
+        </div>
+      </AnimeWrapper>
 
-              {formError && (
-                <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-sm font-semibold text-red-700 dark:text-red-400">
-                  {formError}
-                </div>
-              )}
+      {/* TAB 1: PROJECTS MANAGEMENT */}
+      {activeTab === 'projects' && (
+        <AnimeWrapper animationType="fadeUp" delay={200}>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Manage Projects</h2>
+              <button
+                onClick={startAddProject}
+                className="px-5 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center space-x-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>Add Project</span>
+              </button>
+            </div>
 
-              <form onSubmit={handleFormSubmit} className="space-y-6">
-                {/* Form fields grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Project Name</label>
-                    <input
-                      type="text"
-                      name="title"
-                      required
-                      value={projectForm.title}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Technologies Used (Comma-separated)</label>
-                    <input
-                      type="text"
-                      name="technologies"
-                      placeholder="e.g. React, Node.js, Express, MongoDB"
-                      value={projectForm.technologies}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Short Description</label>
-                  <textarea
-                    name="description"
-                    required
-                    rows="3"
-                    value={projectForm.description}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">GitHub Repository Link</label>
-                    <input
-                      type="url"
-                      name="githubLink"
-                      value={projectForm.githubLink}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Live Deployment Link</label>
-                    <input
-                      type="url"
-                      name="liveLink"
-                      value={projectForm.liveLink}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Key Features (Comma-separated)</label>
-                  <textarea
-                    name="features"
-                    rows="2"
-                    placeholder="e.g. JWT Auth integration, Dark mode support, Responsive panels"
-                    value={projectForm.features}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Challenges Faced</label>
-                    <textarea
-                      name="challengesFaced"
-                      rows="3"
-                      value={projectForm.challengesFaced}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                    ></textarea>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Learning Outcomes</label>
-                    <textarea
-                      name="learningOutcomes"
-                      rows="3"
-                      value={projectForm.learningOutcomes}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm"
-                    ></textarea>
-                  </div>
-                </div>
-
-                {/* Upload Image management */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Project Screenshot Images</label>
-                  
-                  {/* Current images checklist with delete buttons */}
-                  {projectForm.existingImages && projectForm.existingImages.length > 0 && (
-                    <div className="flex flex-wrap gap-4 mb-4">
-                      {projectForm.existingImages.map((img, idx) => (
-                        <div key={idx} className="relative w-24 h-16 border rounded overflow-hidden bg-slate-50">
-                          <img src={img} className="w-full h-full object-cover" alt="existing screenshot" />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveExistingImage(idx)}
-                            className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-650 text-white rounded-full p-1 cursor-pointer"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+            {loadingProjects ? (
+              <div className="py-12 text-center text-slate-500">Loading projects...</div>
+            ) : projects.length === 0 ? (
+              <div className="py-12 text-center glass-panel rounded-3xl text-slate-500">No projects added yet.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projects.map(proj => {
+                  const projId = proj.id || proj._id;
+                  return (
+                    <div key={projId} className="glass-panel p-6 rounded-3xl border border-slate-200/50 dark:border-white/10 flex flex-col justify-between space-y-4">
+                      <div>
+                        <span className="text-xs font-bold text-purple-600 dark:text-purple-400">{proj.category || 'Web'}</span>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{proj.title}</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-2">{proj.description}</p>
+                      </div>
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-200/40 dark:border-white/5">
+                        <Link to={`/projects/${projId}`} className="text-xs font-bold text-purple-600 hover:underline">View Live</Link>
+                        <div className="flex space-x-2">
+                          <button onClick={() => startEditProject(proj)} className="p-1.5 rounded-lg text-slate-400 hover:text-purple-500 hover:bg-purple-500/10"><Edit2 size={16} /></button>
+                          <button onClick={() => handleDeleteProject(projId)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10"><Trash2 size={16} /></button>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  )}
-
-                  {/* Multer Local File Upload input */}
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="w-full text-sm text-slate-550 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-950/40 dark:file:text-blue-400 file:cursor-pointer"
-                  />
-                  <p className="text-[10px] font-medium text-slate-450 mt-2">
-                    Supports JPG, PNG, WEBP. Max size 5MB. You can select up to 5 files at once.
-                  </p>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex gap-4 pt-4 justify-end border-t border-slate-100 dark:border-slate-900/50">
-                  <button
-                    type="button"
-                    onClick={() => setIsFormOpen(false)}
-                    className="px-5 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-650 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-950/40 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={formSubmitting}
-                    className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-70 cursor-pointer"
-                  >
-                    {formSubmitting ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <>
-                        <Save className="mr-1.5 h-4 w-4" /> Save Project
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* Grid or Table listing projects */}
-          {loadingProjects ? (
-            <div className="flex items-center justify-center p-12">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : projects.length === 0 ? (
-            <div className="text-center p-12 glass-panel rounded-2xl">
-              <p className="text-slate-500 dark:text-slate-400">No projects added yet. Click "Add Project" to get started.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((proj) => (
-                <div key={proj._id} className="glass-panel p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-all glow-border">
-                  <div>
-                    <h4 className="font-bold text-lg text-slate-900 dark:text-white leading-tight mb-2">
-                      {proj.title}
-                    </h4>
-                    <p className="text-xs font-medium text-slate-450 line-clamp-2 leading-relaxed mb-4">
-                      {proj.description}
-                    </p>
-                  </div>
-                  
-                  {/* Controls */}
-                  <div className="flex gap-2 justify-end pt-4 border-t border-slate-100 dark:border-slate-900/50">
-                    <button
-                      onClick={() => startEditProject(proj)}
-                      className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-md cursor-pointer"
-                      title="Edit details"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProject(proj._id)}
-                      className="p-2 text-red-650 dark:text-red-405 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md cursor-pointer"
-                      title="Delete project"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </AnimeWrapper>
       )}
 
-      {/* 2. MESSAGES TAB PANEL */}
+      {/* TAB 2: SKILLS MANAGEMENT */}
+      {activeTab === 'skills' && (
+        <AnimeWrapper animationType="fadeUp" delay={200}>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Manage Skills</h2>
+              <button
+                onClick={() => { setEditingSkill(null); setSkillForm({ name: '', level: 85, category: 'frontend', icon: 'code' }); setIsSkillModalOpen(true); }}
+                className="px-5 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center space-x-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>Add Skill</span>
+              </button>
+            </div>
+
+            {loadingSkills ? (
+              <div className="py-12 text-center text-slate-500">Loading skills...</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {skills.map(sk => {
+                  const skId = sk.id || sk._id;
+                  return (
+                    <div key={skId} className="glass-panel p-5 rounded-2xl border border-slate-200/50 dark:border-white/10 flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white">{sk.name}</h4>
+                        <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">{sk.category} ({sk.level}%)</span>
+                      </div>
+                      <div className="flex space-x-1">
+                        <button onClick={() => { setEditingSkill(sk); setSkillForm({ name: sk.name, level: sk.level, category: sk.category, icon: sk.icon || 'code' }); setIsSkillModalOpen(true); }} className="p-1 rounded-lg text-slate-400 hover:text-purple-500"><Edit2 size={14} /></button>
+                        <button onClick={() => handleDeleteSkill(skId)} className="p-1 rounded-lg text-slate-400 hover:text-red-500"><Trash2 size={14} /></button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </AnimeWrapper>
+      )}
+
+      {/* TAB 3: CERTIFICATIONS MANAGEMENT */}
+      {activeTab === 'certs' && (
+        <AnimeWrapper animationType="fadeUp" delay={200}>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Manage Certifications</h2>
+              <button
+                onClick={() => { setCertForm({ title: '', issuer: '', date: '', credentialId: '', verifyUrl: '', category: 'practical', description: '' }); setCertFile(null); setIsCertModalOpen(true); }}
+                className="px-5 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center space-x-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>Add Certificate</span>
+              </button>
+            </div>
+
+            {loadingCerts ? (
+              <div className="py-12 text-center text-slate-500">Loading certifications...</div>
+            ) : certifications.length === 0 ? (
+              <div className="py-12 text-center glass-panel rounded-3xl text-slate-500">No certifications added yet.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {certifications.map(cert => {
+                  const certId = cert.id || cert._id;
+                  return (
+                    <div key={certId} className="glass-panel p-6 rounded-3xl border border-slate-200/50 dark:border-white/10 flex flex-col justify-between space-y-4">
+                      <div>
+                        <span className="text-xs font-bold text-emerald-500">{cert.issuer}</span>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{cert.title}</h3>
+                        <p className="text-xs text-slate-400 mt-1">{cert.date || cert.issue_date}</p>
+                      </div>
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-200/40 dark:border-white/5">
+                        {cert.pdf_url && <a href={cert.pdf_url} target="_blank" rel="noreferrer" className="text-xs font-bold text-purple-600 hover:underline">View PDF/Image</a>}
+                        <button onClick={() => handleDeleteCert(certId)} className="p-1 rounded-lg text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </AnimeWrapper>
+      )}
+
+      {/* TAB 4: MILESTONES MANAGEMENT */}
+      {activeTab === 'milestones' && (
+        <AnimeWrapper animationType="fadeUp" delay={200}>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Manage Experience & Milestones</h2>
+              <button
+                onClick={() => { setEditingMilestone(null); setMilestoneForm({ year: '', title: '', company: '', description: '', icon: 'briefcase' }); setIsMilestoneModalOpen(true); }}
+                className="px-5 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center space-x-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>Add Milestone</span>
+              </button>
+            </div>
+
+            {loadingMilestones ? (
+              <div className="py-12 text-center text-slate-500">Loading milestones...</div>
+            ) : milestones.length === 0 ? (
+              <div className="py-12 text-center glass-panel rounded-3xl text-slate-500">No milestones added yet.</div>
+            ) : (
+              <div className="space-y-4">
+                {milestones.map(ms => {
+                  const msId = ms.id || ms._id;
+                  return (
+                    <div key={msId} className="glass-panel p-6 rounded-3xl border border-slate-200/50 dark:border-white/10 flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold text-purple-600 dark:text-purple-400">{ms.year} • {ms.company}</span>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">{ms.title}</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{ms.description}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button onClick={() => { setEditingMilestone(ms); setMilestoneForm({ year: ms.year, title: ms.title, company: ms.company || '', description: ms.description || '', icon: ms.icon || 'briefcase' }); setIsMilestoneModalOpen(true); }} className="p-1.5 rounded-lg text-slate-400 hover:text-purple-500"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDeleteMilestone(msId)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </AnimeWrapper>
+      )}
+
+      {/* TAB 5: MESSAGES */}
       {activeTab === 'messages' && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Contact Submissions</h3>
-          
-          {loadingMessages ? (
-            <div className="flex items-center justify-center p-12">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-center p-12 glass-panel rounded-2xl">
-              <p className="text-slate-500 dark:text-slate-400">No contact messages received yet.</p>
-            </div>
-          ) : (
-            <div className="space-y-6 max-w-4xl">
-              {messages.map((msg) => (
-                <div
-                  key={msg._id}
-                  className="glass-panel p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 hover:shadow-md transition-all animate-fade-in-up"
-                >
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-slate-900 dark:text-white">{msg.name}</span>
-                      <span className="text-xs text-slate-400">&lt;{msg.email}&gt;</span>
+        <AnimeWrapper animationType="fadeUp" delay={200}>
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Contact Form Messages</h2>
+            {loadingMessages ? (
+              <div className="py-12 text-center text-slate-500">Loading inbox messages...</div>
+            ) : messages.length === 0 ? (
+              <div className="py-12 text-center glass-panel rounded-3xl text-slate-500">No contact messages received yet.</div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map(msg => {
+                  const msgId = msg.id || msg._id;
+                  return (
+                    <div key={msgId} className="glass-panel p-6 rounded-3xl border border-slate-200/50 dark:border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-slate-900 dark:text-white">{msg.name}</span>
+                          <span className="text-xs text-slate-400">&lt;{msg.email}&gt;</span>
+                        </div>
+                        <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">{msg.subject || 'No Subject'}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">{msg.message}</p>
+                      </div>
+                      <button onClick={() => handleDeleteMessage(msgId)} className="px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20">Delete</button>
                     </div>
-                    
-                    <div>
-                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-0.5 rounded">
-                        Subject: {msg.subject}
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-slate-650 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                      {msg.message}
-                    </p>
-
-                    <div className="flex items-center text-[10px] text-slate-400 font-semibold gap-1.5 pt-2">
-                      <Calendar className="h-3 w-3" />
-                      <span>Received: {new Date(msg.createdAt).toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleDeleteMessage(msg._id)}
-                    className="self-end sm:self-start p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md flex-shrink-0 cursor-pointer"
-                    title="Delete message"
-                  >
-                    <Trash2 className="h-4.5 w-4.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </AnimeWrapper>
       )}
 
-      {/* 3. ANALYTICS TAB PANEL */}
+      {/* TAB 6: ANALYTICS */}
       {activeTab === 'analytics' && (
-        <div className="space-y-8 animate-fade-in-up">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Portfolio Analytics</h3>
-
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl">
-            {/* Visitors Card */}
-            <div className="glass-panel p-6 rounded-2xl flex items-center justify-between shadow-sm">
-              <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Visitor Count</span>
-                <h4 className="text-3xl font-extrabold text-blue-650 dark:text-blue-400 mt-2">
-                  {stats.visitorCount.toLocaleString()}
-                </h4>
-              </div>
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-2xl">
-                <Eye className="h-6 w-6" />
-              </div>
+        <AnimeWrapper animationType="fadeUp" delay={200}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="glass-panel p-8 rounded-3xl text-center space-y-2 border border-purple-500/20">
+              <Eye className="h-8 w-8 text-purple-500 mx-auto" />
+              <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white">{stats.visitorCount}</h3>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Unique Visitors</p>
             </div>
-
-            {/* Total Projects Card */}
-            <div className="glass-panel p-6 rounded-2xl flex items-center justify-between shadow-sm">
-              <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Projects</span>
-                <h4 className="text-3xl font-extrabold text-pink-655 mt-2">
-                  {stats.projectCount}
-                </h4>
-              </div>
-              <div className="p-4 bg-pink-50 dark:bg-pink-950/40 text-pink-600 rounded-2xl">
-                <Layers className="h-6 w-6" />
-              </div>
+            <div className="glass-panel p-8 rounded-3xl text-center space-y-2 border border-pink-500/20">
+              <FolderKanban className="h-8 w-8 text-pink-500 mx-auto" />
+              <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white">{stats.projectCount}</h3>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Active Portfolio Projects</p>
             </div>
-
-            {/* Total Certifications Card */}
-            <div className="glass-panel p-6 rounded-2xl flex items-center justify-between shadow-sm">
-              <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Certifications</span>
-                <h4 className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-2">
-                  {certCount}
-                </h4>
-              </div>
-              <div className="p-4 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl">
-                <Award className="h-6 w-6" />
-              </div>
-            </div>
-
-            {/* Total Messages Card */}
-            <div className="glass-panel p-6 rounded-2xl flex items-center justify-between shadow-sm">
-              <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Messages Received</span>
-                <h4 className="text-3xl font-extrabold text-purple-655 mt-2">
-                  {stats.messageCount}
-                </h4>
-              </div>
-              <div className="p-4 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-2xl">
-                <MessageSquare className="h-6 w-6" />
-              </div>
+            <div className="glass-panel p-8 rounded-3xl text-center space-y-2 border border-emerald-500/20">
+              <MessageSquare className="h-8 w-8 text-emerald-500 mx-auto" />
+              <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white">{stats.messageCount}</h3>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Messages Received</p>
             </div>
           </div>
+        </AnimeWrapper>
+      )}
 
-          {/* General instructions card */}
-          <div className="glass-panel p-6 rounded-2xl max-w-4xl border-l-4 border-blue-500">
-            <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center">
-              Quick Setup Tips
-            </h4>
-            <ul className="list-disc list-inside text-xs text-slate-500 dark:text-slate-400 mt-3 space-y-2 leading-relaxed">
-              <li>Changes to the projects section reflect globally on the public landing sections instantly.</li>
-              <li>You can check new form inquiries by clicking on the Messages tab periodically.</li>
-              <li>To add, modify, or remove credentials/certificates, navigate to the public <Link to="/certifications" className="text-blue-605 dark:text-blue-400 hover:underline">Certifications Page</Link> where editing privileges are unlocked for you.</li>
-            </ul>
+      {/* PROJECT MODAL */}
+      {isProjectModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-200/40 dark:border-white/10">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{editingProject ? 'Edit Project' : 'Add Project'}</h3>
+              <button onClick={() => setIsProjectModalOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+            </div>
+
+            {projectError && <div className="mt-4 p-3 rounded-xl bg-red-500/10 text-red-500 text-sm">{projectError}</div>}
+
+            <form onSubmit={handleProjectSubmit} className="mt-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Title</label>
+                <input type="text" required value={projectForm.title} onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Description</label>
+                <textarea rows={3} required value={projectForm.description} onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Technologies (comma separated)</label>
+                  <input type="text" value={projectForm.technologies} onChange={(e) => setProjectForm({ ...projectForm, technologies: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Category</label>
+                  <select value={projectForm.category} onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none">
+                    <option value="Web">Web Application</option>
+                    <option value="Mobile">Mobile App</option>
+                    <option value="PostgreSQL">PostgreSQL / Cloud</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">GitHub Link</label>
+                  <input type="url" value={projectForm.githubLink} onChange={(e) => setProjectForm({ ...projectForm, githubLink: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Live Demo Link</label>
+                  <input type="url" value={projectForm.liveLink} onChange={(e) => setProjectForm({ ...projectForm, liveLink: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Key Features (comma separated)</label>
+                <input type="text" value={projectForm.features} onChange={(e) => setProjectForm({ ...projectForm, features: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Upload Project Images</label>
+                <input type="file" multiple accept="image/*" onChange={(e) => setSelectedProjectFiles(Array.from(e.target.files))} className="w-full text-sm text-slate-400" />
+              </div>
+              <div className="pt-4 flex justify-end space-x-3">
+                <button type="button" onClick={() => setIsProjectModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-400/40 text-slate-300">Cancel</button>
+                <button type="submit" disabled={projectSubmitting} className="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold flex items-center space-x-2"><Save size={16} /><span>{projectSubmitting ? 'Saving...' : 'Save Project'}</span></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SKILL MODAL */}
+      {isSkillModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-200/40 dark:border-white/10">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{editingSkill ? 'Edit Skill' : 'Add Skill'}</h3>
+              <button onClick={() => setIsSkillModalOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSkillSubmit} className="mt-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Skill Name</label>
+                <input type="text" required value={skillForm.name} onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Proficiency Level ({skillForm.level}%)</label>
+                <input type="range" min="10" max="100" value={skillForm.level} onChange={(e) => setSkillForm({ ...skillForm, level: parseInt(e.target.value, 10) })} className="w-full accent-purple-600" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Category</label>
+                <select value={skillForm.category} onChange={(e) => setSkillForm({ ...skillForm, category: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none">
+                  <option value="frontend">Frontend</option>
+                  <option value="backend">Backend</option>
+                  <option value="database">Database & Cloud</option>
+                  <option value="devops">DevOps & Tools</option>
+                </select>
+              </div>
+              <div className="pt-4 flex justify-end space-x-3">
+                <button type="button" onClick={() => setIsSkillModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-400/40 text-slate-300">Cancel</button>
+                <button type="submit" disabled={skillSubmitting} className="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold flex items-center space-x-2"><Save size={16} /><span>{skillSubmitting ? 'Saving...' : 'Save Skill'}</span></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CERTIFICATION MODAL */}
+      {isCertModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-200/40 dark:border-white/10">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Add Certification</h3>
+              <button onClick={() => setIsCertModalOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleCertSubmit} className="mt-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Title</label>
+                <input type="text" required value={certForm.title} onChange={(e) => setCertForm({ ...certForm, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Issuer Organization</label>
+                <input type="text" required value={certForm.issuer} onChange={(e) => setCertForm({ ...certForm, issuer: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Issue Date</label>
+                <input type="text" value={certForm.date} onChange={(e) => setCertForm({ ...certForm, date: e.target.value })} placeholder="e.g. March 2025" className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Credential ID (Optional)</label>
+                <input type="text" value={certForm.credentialId} onChange={(e) => setCertForm({ ...certForm, credentialId: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Certificate File (PDF or Image)</label>
+                <input type="file" required accept="image/*,.pdf" onChange={(e) => setCertFile(e.target.files[0])} className="w-full text-sm text-slate-400" />
+              </div>
+              <div className="pt-4 flex justify-end space-x-3">
+                <button type="button" onClick={() => setIsCertModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-400/40 text-slate-300">Cancel</button>
+                <button type="submit" disabled={certSubmitting} className="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold flex items-center space-x-2"><Save size={16} /><span>{certSubmitting ? 'Uploading...' : 'Save Certificate'}</span></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MILESTONE MODAL */}
+      {isMilestoneModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-200/40 dark:border-white/10">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{editingMilestone ? 'Edit Milestone' : 'Add Milestone'}</h3>
+              <button onClick={() => setIsMilestoneModalOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleMilestoneSubmit} className="mt-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Year / Period</label>
+                <input type="text" required value={milestoneForm.year} onChange={(e) => setMilestoneForm({ ...milestoneForm, year: e.target.value })} placeholder="e.g. 2024 - Present" className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Role Title</label>
+                <input type="text" required value={milestoneForm.title} onChange={(e) => setMilestoneForm({ ...milestoneForm, title: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Company / Organization</label>
+                <input type="text" value={milestoneForm.company} onChange={(e) => setMilestoneForm({ ...milestoneForm, company: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Description</label>
+                <textarea rows={3} required value={milestoneForm.description} onChange={(e) => setMilestoneForm({ ...milestoneForm, description: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none" />
+              </div>
+              <div className="pt-4 flex justify-end space-x-3">
+                <button type="button" onClick={() => setIsMilestoneModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-400/40 text-slate-300">Cancel</button>
+                <button type="submit" disabled={milestoneSubmitting} className="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold flex items-center space-x-2"><Save size={16} /><span>{milestoneSubmitting ? 'Saving...' : 'Save Milestone'}</span></button>
+              </div>
+            </form>
           </div>
         </div>
       )}

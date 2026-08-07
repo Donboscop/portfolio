@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Lock } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import AnimeWrapper from '../components/AnimeWrapper';
+import IconsaxIcon from '../components/IconsaxIcon';
 import '../components/CustomAnimation.css';
 
 const Contact = () => {
@@ -51,164 +52,145 @@ const Contact = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 animate-fade-in-up">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Contact <span className="text-gradient">Me</span>
-        </h2>
-        <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-          Got a project idea, job opportunity, or just want to say hello? Drop a message!
-        </p>
-      </div>
+    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <AnimeWrapper animationType="fadeUp" delay={100}>
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <span className="text-xs font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
+            Let's Collaborate
+          </span>
+          <h1 className="fluid-heading-lg text-slate-900 dark:text-white">
+            Get In Touch
+          </h1>
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+            Have a project in mind, need AWS cloud setup, or looking for a developer? Send me a message below.
+          </p>
+        </div>
+      </AnimeWrapper>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-5xl mx-auto items-start">
-        
-        {/* Left: Contact Info Info Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        {/* Left Column: Direct Info Cards */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="glass-panel p-8 rounded-2xl shadow-sm space-y-8">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Contact Information</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              I am open to discuss custom software development, full-time engineering placements, or contract consulting.
-            </p>
+          <AnimeWrapper animationType="fadeUp" delay={200}>
+            <div className="glass-panel p-8 rounded-3xl border border-slate-200/50 dark:border-white/10 space-y-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                Contact Details
+              </h3>
 
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl">
-                  <Mail className="h-6 w-6" />
+              <div className="space-y-5">
+                <div className="flex items-center space-x-4">
+                  <IconsaxIcon name="mail" size={22} />
+                  <div>
+                    <span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Email</span>
+                    <a href="mailto:donboscop24@gmail.com" className="font-semibold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400">
+                      donboscop24@gmail.com
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Email Address</h4>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">donboscop24@gmail.com</p>
-                </div>
-              </div>
 
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-pink-50 dark:bg-pink-950/40 text-pink-650 dark:text-pink-405 rounded-xl">
-                  <Phone className="h-6 w-6" />
+                <div className="flex items-center space-x-4">
+                  <IconsaxIcon name="globe" size={22} />
+                  <div>
+                    <span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Location</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">India / Remote Worldwide</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Phone Call</h4>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">+91 8220754727</p>
-                </div>
-              </div>
 
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-50 dark:bg-purple-950/40 text-purple-650 dark:text-purple-405 rounded-xl">
-                  <MapPin className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Office Location</h4>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">Tiruchirappalli, Tamil Nadu, India</p>
+                <div className="flex items-center space-x-4">
+                  <IconsaxIcon name="shield" size={22} />
+                  <div>
+                    <span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Database & Hosting</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">AWS RDS PostgreSQL Free Tier</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </AnimeWrapper>
         </div>
 
-        {/* Right: Contact Form Panel */}
+        {/* Right Column: Form */}
         <div className="lg:col-span-7">
-          <div className="glass-panel p-8 sm:p-10 rounded-2xl shadow-sm">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Send Message</h3>
+          <AnimeWrapper animationType="fadeUp" delay={300}>
+            <div className="glass-panel p-8 rounded-3xl border border-slate-200/50 dark:border-white/10">
+              {success && (
+                <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center space-x-3">
+                  <CheckCircle size={22} />
+                  <span>Message sent successfully! I will respond to your email shortly.</span>
+                </div>
+              )}
 
-            {/* Success Notification */}
-            {success && (
-              <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl flex items-center space-x-3 text-emerald-700 dark:text-emerald-400">
-                <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-semibold">Message sent successfully! I will get back to you soon.</span>
-              </div>
-            )}
+              {error && (
+                <div className="mb-6 p-4 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center space-x-3">
+                  <AlertCircle size={22} />
+                  <span>{error}</span>
+                </div>
+              )}
 
-            {/* Error Notification */}
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl flex items-center space-x-3 text-red-700 dark:text-red-400">
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-semibold">{error}</span>
-              </div>
-            )}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Your Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Jane Doe"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none focus:border-purple-500 transition-colors"
+                    />
+                  </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Your Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="jane@example.com"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none focus:border-purple-500 transition-colors"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Name</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Subject</label>
                   <input
                     type="text"
-                    name="name"
-                    id="name"
-                    required
-                    value={formData.name}
+                    name="subject"
+                    value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white transition-all"
+                    placeholder="Project Inquiry / Job Opportunity"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
+
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Message</label>
+                  <textarea
+                    name="message"
+                    rows={5}
                     required
-                    value={formData.email}
+                    value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white transition-all"
+                    placeholder="Hello Don Bosco, I would like to discuss..."
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-300/40 dark:border-white/10 text-slate-900 dark:text-white outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="subject" className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Subject</label>
-                <input
-                  type="text"
-                  name="subject"
-                  id="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  placeholder="e.g. Hiring Inquiry, Project Collaboration"
-                  className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white transition-all"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Message</label>
-                <textarea
-                  name="message"
-                  id="message"
-                  required
-                  rows="5"
-                  value={formData.message}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white transition-all"
-                ></textarea>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex items-center justify-center w-full px-6 py-3.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-750 text-white font-semibold rounded-xl transition-all shadow-md cursor-pointer hover-spring disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" /> Send Message
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center justify-center space-x-2 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+                >
+                  <Send size={18} />
+                  <span>{loading ? 'Sending Message...' : 'Send Message'}</span>
+                </button>
+              </form>
+            </div>
+          </AnimeWrapper>
         </div>
-
-      </div>
-
-      {/* Subtle Admin Login Link */}
-      <div className="mt-16 pt-8 border-t border-slate-200/50 dark:border-slate-800/50 text-center animate-fade-in-up">
-        <Link
-          to="/admin/login"
-          className="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 cursor-pointer hover-spring"
-        >
-          <Lock className="h-3 w-3 mr-1.5" />
-          Admin Portal Login
-        </Link>
       </div>
     </div>
   );
