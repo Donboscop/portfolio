@@ -37,8 +37,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Ensure uploads folder exists and serve static
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Could not create uploads directory:', err.message);
 }
 app.use('/uploads', express.static(uploadDir));
 
@@ -54,14 +58,14 @@ app.use('/api/certifications', certificationRoutes);
 app.use('/api/skills', skillsRoutes);
 app.use('/api/milestones', milestoneRoutes);
 
-// Serve Frontend Static Build in Production
-if (process.env.NODE_ENV === 'production') {
+// Serve Frontend Static Build in Production (if static files served by express)
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
   const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
   app.use(express.static(frontendPath));
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
-} else {
+} else if (!process.env.VERCEL) {
   app.get('/', (req, res) => {
     res.send('Portfolio API Server is running (PostgreSQL Enabled)');
   });
@@ -76,9 +80,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialize DB and start listening
-initDB().then(() => {
+// Initialize DB and start listening if not running on Vercel
+initDB().catch(err => console.error('Database initialization error:', err));
+
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   });
-});
+}
+
+export default app;
