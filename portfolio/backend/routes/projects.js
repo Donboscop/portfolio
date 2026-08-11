@@ -1,4 +1,5 @@
 import express from 'express';
+import Project from '../models/Project.js';
 import createUploader, { getFileUrl } from '../config/s3.js';
 import protect from '../middleware/auth.js';
 
