@@ -1,0 +1,28 @@
+{
+  "courses": [
+    {
+      "id": "1",
+      "name": "React for Beginners",
+      "price": "$499",
+      "image": "http://localhost:3000/assets/course1.jpg"
+    },
+    {
+      "id": "2",
+      "name": "Node.js Masterclass",
+      "price": "$599",
+      "image": "http://localhost:3000/assets/course2.jpg"
+    },
+    {
+      "id": "3",
+      "name": "Full Stack Web Development",
+      "price": "$899",
+      "image": "http://localhost:3000/assets/course3.jpg"
+    },
+    {
+      "id": "4",
+      "name": "JavaScript Deep Dive",
+      "price": "$399",
+      "image": "http://localhost:3000/assets/course4.jpg"
+    }
+  ]
+}

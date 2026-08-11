@@ -1,0 +1,109 @@
+/* App Container */
+.app {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+/* Header */
+.site-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.site-header p {
+  color: #526079;
+  margin-bottom: 0;
+}
+
+.brand {
+  text-decoration: none;
+  color: #17233b;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Course List */
+.course-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+/* Card & Details */
+.card,
+.details {
+  background: #ffffff;
+  border: 1px solid #dce3ee;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(30, 48, 80, 0.1);
+}
+
+/* Course Image */
+.course-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* Card Content */
+.card-content {
+  padding: 20px;
+}
+
+.card-content h2 {
+  margin-top: 0;
+  color: #17233b;
+}
+
+.card-content p,
+.details p {
+  color: #526079;
+  line-height: 1.6;
+}
+
+/* Button */
+.button {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 18px;
+  background: #3157d5;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: 0.3s ease;
+}
+
+.button:hover {
+  background: #2445b5;
+}
+
+/* Course Details */
+.details {
+  width: min(700px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+  text-align: center;
+}
+
+.details-image {
+  width: 100%;
+  height: min(320px, 45vw);
+  min-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.level {
+  color: #3157d5;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}

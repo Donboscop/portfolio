@@ -46,8 +46,14 @@ try {
 }
 app.use('/uploads', express.static(uploadDir));
 
+// Connect DB middleware for Serverless environment
+app.use(async (req, res, next) => {
+  await initDB();
+  next();
+});
+
 // Health check
-app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'PostgreSQL Backend server is running.' }));
+app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'MongoDB Atlas Backend server is running.' }));
 
 // Mount API Routes
 app.use('/api/auth', authRoutes);
@@ -67,7 +73,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
   });
 } else if (!process.env.VERCEL) {
   app.get('/', (req, res) => {
-    res.send('Portfolio API Server is running (PostgreSQL Enabled)');
+    res.send('Portfolio API Server is running (MongoDB Atlas Enabled)');
   });
 }
 

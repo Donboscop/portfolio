@@ -1,0 +1,27 @@
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+}
+
+.course-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.course-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.course-card img {
+  width: 100%; 
+  height: 140px;
+  object-fit: cover;
+  border-radius: 6px;
+}

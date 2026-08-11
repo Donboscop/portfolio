@@ -1,0 +1,28 @@
+/* Global Reset */
+* {
+  box-sizing: border-box;
+}
+
+/* Body Styling */
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  background: #f5f7fb;
+  color: #17233b;
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* Inherit Font */
+button,
+a {
+  font: inherit;
+}

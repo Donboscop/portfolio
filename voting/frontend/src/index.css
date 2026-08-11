@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  font-family: 'Outfit', sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0.25)), url('/nature-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Styles (Frosted GlassWorld Theme) */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.16);
+  color: #ffffff;
+}
+
+.glass-panel-dark {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+  outline: none;
+}
+
+/* Cloud Animation Keyframes */
+@keyframes drift-left-to-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100vw);
+  }
+}
+
+.animate-cloud-slow {
+  animation: drift-left-to-right 120s linear infinite;
+}
+
+.animate-cloud-medium {
+  animation: drift-left-to-right 80s linear infinite;
+}
+
+.animate-cloud-fast {
+  animation: drift-left-to-right 50s linear infinite;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

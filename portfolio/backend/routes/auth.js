@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { query } from '../config/db.js';
+import User from '../models/User.js';
 import protect from '../middleware/auth.js';
 import { sendEmail } from '../config/mailer.js';
 import multer from 'multer';
@@ -8,17 +8,6 @@ import fs from 'fs';
 import path from 'path';
 
 const router = express.Router();
-
-// Helper to query DB with 1 automatic retry on cold starts
-const safeQuery = async (text, params) => {
-  try {
-    return await query(text, params);
-  } catch (err) {
-    console.warn('Retrying DB query due to cold start:', err.message);
-    await new Promise(r => setTimeout(r, 1000));
-    return await query(text, params);
-  }
-};
 
 // @desc    Generate & send OTP to admin email
 // @route   POST /api/auth/otp/send
@@ -31,29 +20,24 @@ router.post('/otp/send', async (req, res) => {
   }
 
   try {
-    const userRes = await safeQuery('SELECT * FROM users WHERE email = $1', [email]);
-    let user = userRes.rows[0];
+    let user = await User.findOne({ email: email.toLowerCase().trim() });
 
     // If user does not exist yet, auto-create as Admin
     if (!user) {
-      const username = email.split('@')[0] || 'Admin';
-      const insertAdmin = await safeQuery(
-        `INSERT INTO users (username, email, password, role) 
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-        [username, email, '$2a$10$UnrealPlaceholderPasswordForOTPUser', 'admin']
-      );
-      user = insertAdmin.rows[0];
+      user = await User.create({
+        email: email.toLowerCase().trim(),
+        password: 'UnrealPlaceholderPasswordForOTPUser'
+      });
     }
 
     // Generate random 6-digit OTP
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Save OTP to PostgreSQL
-    await safeQuery(
-      'UPDATE users SET otp = $1, otp_expires = $2 WHERE id = $3',
-      [generatedOtp, otpExpires, user.id]
-    );
+    // Save OTP to MongoDB
+    user.otp = generatedOtp;
+    user.otpExpires = otpExpires;
+    await user.save();
 
     // Print clear console log banner for developer
     console.log('\n======================================================');
@@ -92,7 +76,7 @@ router.post('/otp/send', async (req, res) => {
     });
   } catch (error) {
     console.error('OTP Send Error:', error);
-    res.status(500).json({ message: 'Database connection warming up. Please click Get Verification Code once more.' });
+    res.status(500).json({ message: error.message || 'OTP generation error' });
   }
 });
 
@@ -107,8 +91,7 @@ router.post('/otp/verify', async (req, res) => {
   }
 
   try {
-    const userRes = await safeQuery('SELECT * FROM users WHERE email = $1', [email]);
-    const user = userRes.rows[0];
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -118,22 +101,24 @@ router.post('/otp/verify', async (req, res) => {
     const storedOtp = user.otp ? String(user.otp).trim() : '';
 
     // Check if OTP matches and is not expired
-    if (!storedOtp || storedOtp !== inputOtp || !user.otp_expires || new Date() > new Date(user.otp_expires)) {
+    if (!storedOtp || storedOtp !== inputOtp || !user.otpExpires || new Date() > new Date(user.otpExpires)) {
       return res.status(400).json({ message: 'Invalid or expired verification code' });
     }
 
     // Clear OTP after successful verification
-    await safeQuery('UPDATE users SET otp = NULL, otp_expires = NULL WHERE id = $1', [user.id]);
+    user.otp = '';
+    user.otpExpires = undefined;
+    await user.save();
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role || 'admin' },
+      { id: user._id, email: user.email, role: 'admin' },
       process.env.JWT_SECRET || 'developer_portfolio_secret_key_987654321',
       { expiresIn: '30d' }
     );
 
     res.json({
-      _id: user.id,
+      _id: user._id,
       email: user.email,
       token
     });
@@ -148,13 +133,9 @@ router.post('/otp/verify', async (req, res) => {
 // @access  Protected
 router.get('/verify', protect, async (req, res) => {
   try {
-    const userRes = await safeQuery(
-      'SELECT id, username, email, role, profile_pic FROM users WHERE id = $1', 
-      [req.user.id]
-    );
-    const user = userRes.rows[0];
+    const user = await User.findById(req.user.id).select('-password');
     if (user) {
-      res.json({ valid: true, user: { ...user, _id: user.id, profilePic: user.profile_pic } });
+      res.json({ valid: true, user: { ...user.toObject(), _id: user._id, profilePic: user.profilePic } });
     } else {
       res.status(404).json({ valid: false, message: 'User not found' });
     }
@@ -168,10 +149,9 @@ router.get('/verify', protect, async (req, res) => {
 // @access  Public
 router.get('/admin-profile', async (req, res) => {
   try {
-    const userRes = await safeQuery('SELECT id, email, profile_pic FROM users LIMIT 1');
-    const user = userRes.rows[0];
+    const user = await User.findOne({});
     if (user) {
-      res.json({ email: user.email, profilePic: user.profile_pic, _id: user.id });
+      res.json({ email: user.email, profilePic: user.profilePic, _id: user._id });
     } else {
       res.status(404).json({ message: 'Admin user not found' });
     }
@@ -217,15 +197,14 @@ router.post('/profile-pic', protect, upload.single('image'), async (req, res) =>
   }
 
   try {
-    const userRes = await safeQuery('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    const user = userRes.rows[0];
+    const user = await User.findById(req.user.id);
     if (!user) {
       fs.unlinkSync(req.file.path);
       return res.status(404).json({ message: 'Admin user not found' });
     }
 
-    if (user.profile_pic && user.profile_pic.startsWith('/uploads/')) {
-      const oldPath = path.join(process.cwd(), user.profile_pic.substring(1));
+    if (user.profilePic && user.profilePic.startsWith('/uploads/')) {
+      const oldPath = path.join(process.cwd(), user.profilePic.substring(1));
       if (fs.existsSync(oldPath)) {
         try {
           fs.unlinkSync(oldPath);
@@ -236,7 +215,8 @@ router.post('/profile-pic', protect, upload.single('image'), async (req, res) =>
     }
 
     const newProfilePic = `/uploads/${req.file.filename}`;
-    await safeQuery('UPDATE users SET profile_pic = $1 WHERE id = $2', [newProfilePic, req.user.id]);
+    user.profilePic = newProfilePic;
+    await user.save();
 
     res.json({ success: true, profilePic: newProfilePic });
   } catch (error) {

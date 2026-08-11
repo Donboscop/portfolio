@@ -1,0 +1,90 @@
+/* ===== Course List Wrapper ===== */
+.course-list-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  padding: 40px 20px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.course-list-wrapper h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #ffffff;
+  margin-bottom: 30px;
+  letter-spacing: 1px;
+}
+
+/* ===== Course Grid ===== */
+.course-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+/* ===== Course Card Box ===== */
+.course-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 24px 28px;
+  width: 280px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: #fff;
+}
+
+.course-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(100, 80, 255, 0.4);
+  border-color: rgba(150, 120, 255, 0.5);
+}
+
+/* ===== Course Name ===== */
+.course-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #c9b8ff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+/* ===== Price ===== */
+.course-price {
+  font-size: 1rem;
+  color: #a0f0b0;
+  margin: 8px 0;
+  font-weight: 600;
+}
+
+/* ===== Available ===== */
+.course-available {
+  font-size: 0.95rem;
+  margin: 8px 0;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.course-available.yes {
+  background: rgba(0, 220, 100, 0.15);
+  color: #00dc64;
+  border: 1px solid #00dc6444;
+}
+
+.course-available.no {
+  background: rgba(255, 80, 80, 0.15);
+  color: #ff5050;
+  border: 1px solid #ff505044;
+}
+
+/* ===== Rating ===== */
+.course-rating {
+  font-size: 0.95rem;
+  margin-top: 10px;
+  color: #ffd700;
+  font-weight: 600;
+}

@@ -1,11 +1,15 @@
 import express from 'express';
-import { query } from '../config/db.js';
+import Message from '../models/Message.js';
 import protect from '../middleware/auth.js';
 import { sendEmail } from '../config/mailer.js';
 
 const router = express.Router();
 
-const mapMessage = (row) => row ? { ...row, _id: row.id, createdAt: row.created_at } : null;
+const mapMessage = (doc) => {
+  if (!doc) return null;
+  const m = doc.toObject ? doc.toObject() : doc;
+  return { ...m, _id: m._id, id: m._id, createdAt: m.createdAt };
+};
 
 // @desc    Submit a contact message
 // @route   POST /api/messages
@@ -18,12 +22,14 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const result = await query(
-      'INSERT INTO messages (name, email, subject, message) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, email, subject || '', message]
-    );
+    const newMessage = await Message.create({
+      name,
+      email: email.toLowerCase().trim(),
+      subject: subject || 'General Inquiry',
+      message
+    });
 
-    const savedMessage = mapMessage(result.rows[0]);
+    const savedMessage = mapMessage(newMessage);
 
     // Send email notification to admin
     const adminEmail = process.env.ADMIN_EMAIL || 'donboscop24@gmail.com';
@@ -63,8 +69,8 @@ router.post('/', async (req, res) => {
 // @access  Private/Admin
 router.get('/', protect, async (req, res) => {
   try {
-    const result = await query('SELECT * FROM messages ORDER BY created_at DESC');
-    res.json(result.rows.map(mapMessage));
+    const messages = await Message.find({}).sort({ createdAt: -1 });
+    res.json(messages.map(mapMessage));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -75,14 +81,13 @@ router.get('/', protect, async (req, res) => {
 // @access  Private/Admin
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const msgId = parseInt(req.params.id, 10);
-    const existing = await query('SELECT * FROM messages WHERE id = $1', [msgId]);
+    const message = await Message.findById(req.params.id);
 
-    if (existing.rows.length === 0) {
+    if (!message) {
       return res.status(404).json({ message: 'Message not found' });
     }
 
-    await query('DELETE FROM messages WHERE id = $1', [msgId]);
+    await Message.findByIdAndDelete(req.params.id);
     res.json({ message: 'Message deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });

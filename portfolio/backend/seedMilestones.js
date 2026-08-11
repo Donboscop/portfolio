@@ -1,4 +1,3 @@
-import pool, { initDB } from './config/db.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -36,57 +35,27 @@ const milestoneList = [
 ];
 
 async function seed() {
-  console.log('Seeding Milestones...');
+  console.log('Seeding Milestones to MongoDB Atlas...');
 
-  // 1. Seed MongoDB Atlas AWS if MONGO_URI exists
-  if (process.env.MONGO_URI) {
-    try {
-      await mongoose.connect(process.env.MONGO_URI);
-      const MsSchema = new mongoose.Schema({
-        year: String,
-        title: String,
-        company: String,
-        description: String
-      }, { timestamps: true });
-
-      const MsModel = mongoose.models.Milestone || mongoose.model('Milestone', MsSchema);
-
-      // Clear old milestones and add fresh ones
-      await MsModel.deleteMany({});
-      for (const item of milestoneList) {
-        await MsModel.create(item);
-      }
-      console.log('✅ MongoDB Atlas Milestones Seeded Successfully!');
-    } catch (err) {
-      console.error('[MongoDB Error]:', err.message);
-    }
-  }
-
-  // 2. Seed PostgreSQL Cloud Table
+  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/portfolio';
   try {
-    await initDB();
-    
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS milestones (
-        id SERIAL PRIMARY KEY,
-        year VARCHAR(100) NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        company VARCHAR(255) DEFAULT '',
-        description TEXT NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
+    await mongoose.connect(mongoUri);
+    const MsSchema = new mongoose.Schema({
+      year: String,
+      title: String,
+      company: String,
+      description: String
+    }, { timestamps: true });
 
-    await pool.query('DELETE FROM milestones');
+    const MsModel = mongoose.models.Milestone || mongoose.model('Milestone', MsSchema);
+
+    await MsModel.deleteMany({});
     for (const item of milestoneList) {
-      await pool.query(
-        `INSERT INTO milestones (year, title, company, description) VALUES ($1, $2, $3, $4)`,
-        [item.year, item.title, item.company, item.description]
-      );
+      await MsModel.create(item);
     }
-    console.log('✅ PostgreSQL Milestones Seeded Successfully!');
+    console.log('✅ MongoDB Atlas Milestones Seeded Successfully!');
   } catch (err) {
-    console.error('[PostgreSQL Error]:', err.message);
+    console.error('[MongoDB Error]:', err.message);
   }
 
   console.log('Done!');

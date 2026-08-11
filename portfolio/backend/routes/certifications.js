@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { query } from '../config/db.js';
+import Certificate from '../models/Certificate.js';
 import protect from '../middleware/auth.js';
 
 const router = express.Router();
@@ -41,23 +41,28 @@ const upload = multer({
   }
 });
 
-const mapCertificate = (row) => row ? {
-  ...row,
-  _id: row.id,
-  credentialId: row.credential_id,
-  verifyUrl: row.verify_url,
-  pdfUrl: row.pdf_url,
-  date: row.date || row.issue_date,
-  createdAt: row.created_at
-} : null;
+const mapCertificate = (doc) => {
+  if (!doc) return null;
+  const c = doc.toObject ? doc.toObject() : doc;
+  return {
+    ...c,
+    _id: c._id,
+    id: c._id,
+    credentialId: c.credentialId,
+    verifyUrl: c.verifyUrl,
+    pdfUrl: c.pdfUrl,
+    date: c.date,
+    createdAt: c.createdAt
+  };
+};
 
 // @desc    Get all certificates
 // @route   GET /api/certifications
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM certificates ORDER BY created_at DESC');
-    res.json(result.rows.map(mapCertificate));
+    const certs = await Certificate.find({}).sort({ createdAt: -1 });
+    res.json(certs.map(mapCertificate));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -83,8 +88,8 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
     }
 
     if (credentialId) {
-      const existing = await query('SELECT * FROM certificates WHERE credential_id = $1', [credentialId]);
-      if (existing.rows.length > 0) {
+      const existing = await Certificate.findOne({ credentialId });
+      if (existing) {
         fs.unlinkSync(req.file.path);
         return res.status(400).json({ message: 'A certificate with this Credential ID already exists' });
       }
@@ -92,25 +97,18 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
 
     const pdfUrl = `/uploads/${req.file.filename}`;
 
-    const sql = `
-      INSERT INTO certificates (title, issuer, date, issue_date, credential_id, verify_url, pdf_url, category, description)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING *
-    `;
-
-    const result = await query(sql, [
+    const newCert = await Certificate.create({
       title,
       issuer,
-      date || '',
-      date || '',
-      credentialId || '',
-      verifyUrl || '',
+      date: date || '',
+      credentialId: credentialId || `CERT-${Date.now()}`,
+      verifyUrl: verifyUrl || '',
       pdfUrl,
-      category || 'practical',
-      description || ''
-    ]);
+      category: category || 'practical',
+      description: description || ''
+    });
 
-    res.status(201).json(mapCertificate(result.rows[0]));
+    res.status(201).json(mapCertificate(newCert));
   } catch (error) {
     console.error('Error creating certificate:', error);
     if (req.file && fs.existsSync(req.file.path)) {
@@ -129,16 +127,13 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
 // @access  Private/Admin
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const certId = parseInt(req.params.id, 10);
-    const existing = await query('SELECT * FROM certificates WHERE id = $1', [certId]);
-    if (existing.rows.length === 0) {
+    const cert = await Certificate.findById(req.params.id);
+    if (!cert) {
       return res.status(404).json({ message: 'Certificate not found' });
     }
 
-    const cert = existing.rows[0];
-
-    if (cert.pdf_url && cert.pdf_url.startsWith('/uploads/')) {
-      const filePath = path.join(process.cwd(), cert.pdf_url.substring(1));
+    if (cert.pdfUrl && cert.pdfUrl.startsWith('/uploads/')) {
+      const filePath = path.join(process.cwd(), cert.pdfUrl.substring(1));
       if (fs.existsSync(filePath)) {
         try {
           fs.unlinkSync(filePath);
@@ -148,7 +143,7 @@ router.delete('/:id', protect, async (req, res) => {
       }
     }
 
-    await query('DELETE FROM certificates WHERE id = $1', [certId]);
+    await Certificate.findByIdAndDelete(req.params.id);
     res.json({ message: 'Certificate removed successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
