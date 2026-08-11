@@ -1,45 +1,10 @@
 import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import createUploader, { getFileUrl } from '../config/s3.js';
 import Certificate from '../models/Certificate.js';
 import protect from '../middleware/auth.js';
 
 const router = express.Router();
-
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename(req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `certificate-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
-// Multer Upload Filter for PDFs and images
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for certificates
-  fileFilter(req, file, cb) {
-    const filetypes = /jpeg|jpg|png|webp|gif|pdf/i;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const isPdf = file.mimetype === 'application/pdf';
-    const isImg = /image/i.test(file.mimetype);
-
-    if (extname && (isPdf || isImg)) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Images and PDF files only (jpeg, jpg, png, webp, gif, pdf)!'));
-    }
-  }
-});
+const upload = createUploader({ maxFileSize: 10 * 1024 * 1024 });
 
 const mapCertificate = (doc) => {
   if (!doc) return null;
@@ -95,7 +60,7 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
       }
     }
 
-    const pdfUrl = `/uploads/${req.file.filename}`;
+    const pdfUrl = getFileUrl(req.file);
 
     const newCert = await Certificate.create({
       title,

@@ -1,45 +1,9 @@
 import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import Project from '../models/Project.js';
+import createUploader, { getFileUrl } from '../config/s3.js';
 import protect from '../middleware/auth.js';
 
 const router = express.Router();
-
-// Ensure uploads directory exists
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename(req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
-// Multer Upload Filter
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter(req, file, cb) {
-    const filetypes = /jpeg|jpg|png|webp|gif/i;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (extname && mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Images only (jpeg, jpg, png, webp, gif)!'));
-    }
-  }
-});
+const upload = createUploader({ maxFileSize: 5 * 1024 * 1024 });
 
 // Helper to parse comma-separated lists and remove empties
 const parseList = (val) => {
@@ -131,8 +95,8 @@ router.post('/', protect, upload.array('images', 5), async (req, res) => {
     const parsedTech = parseList(technologies);
     const parsedFeatures = parseList(features);
     
-    // Gather files and format relative paths
-    const newImageUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    // Gather files and format paths (S3 URL or local path)
+    const newImageUrls = req.files ? req.files.map(file => getFileUrl(file)) : [];
     const parsedExisting = parseList(existingImages);
     const allImages = [...parsedExisting, ...newImageUrls];
 
@@ -184,7 +148,7 @@ router.put('/:id', protect, upload.array('images', 5), async (req, res) => {
       featured
     } = req.body;
 
-    const newImageUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    const newImageUrls = req.files ? req.files.map(file => getFileUrl(file)) : [];
     const parsedExisting = parseList(existingImages);
     const allImages = existingImages !== undefined ? [...parsedExisting, ...newImageUrls] : project.images;
 

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import protect from '../middleware/auth.js';
 import { sendEmail } from '../config/mailer.js';
-import multer from 'multer';
+import createUploader, { getFileUrl } from '../config/s3.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -160,33 +160,7 @@ router.get('/admin-profile', async (req, res) => {
   }
 });
 
-// Configure Multer for local profile picture uploads
-const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, `profile-pic-${Date.now()}${ext}`);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter(req, file, cb) {
-    if (/image/i.test(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Images only (jpeg, jpg, png, webp, gif)!'));
-    }
-  }
-});
+const upload = createUploader({ maxFileSize: 5 * 1024 * 1024 });
 
 // @desc    Upload / Update admin profile picture
 // @route   POST /api/auth/profile-pic
@@ -199,7 +173,7 @@ router.post('/profile-pic', protect, upload.single('image'), async (req, res) =>
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
-      fs.unlinkSync(req.file.path);
+      if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
       return res.status(404).json({ message: 'Admin user not found' });
     }
 
@@ -214,13 +188,13 @@ router.post('/profile-pic', protect, upload.single('image'), async (req, res) =>
       }
     }
 
-    const newProfilePic = `/uploads/${req.file.filename}`;
+    const newProfilePic = getFileUrl(req.file);
     user.profilePic = newProfilePic;
     await user.save();
 
     res.json({ success: true, profilePic: newProfilePic });
   } catch (error) {
-    if (req.file && fs.existsSync(req.file.path)) {
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
       try {
         fs.unlinkSync(req.file.path);
       } catch (err) {

@@ -90,7 +90,7 @@ app.use((err, req, res, next) => {
 initDB().catch(err => console.error('Database initialization error:', err));
 
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   });
 }
