@@ -69,29 +69,29 @@ const Home = () => {
     <div className="relative min-h-screen pt-20 pb-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 relative z-10 space-y-32">
         
-        {/* ================= HERO SECTION (olouen.com Editorial Intro) ================= */}
-        <section className="pt-12 sm:pt-20">
+        {/* ================= HERO SECTION (Clearance & Alignment Upgrade) ================= */}
+        <section className="pt-24 sm:pt-32 lg:pt-36">
           <AnimeWrapper animationType="fadeUp" delay={100}>
-            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full glass-panel border border-purple-500/30 mb-8">
-              <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
-              <span className="text-xs font-mono font-bold tracking-widest text-purple-300 uppercase">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full glass-panel border border-indigo-500/30 mb-8 shadow-sm">
+              <Sparkles className="w-4 h-4 text-indigo-400 animate-pulse" />
+              <span className="text-xs font-mono font-bold tracking-widest text-indigo-300 uppercase">
                 Full-Stack MERN & AWS Cloud Developer
               </span>
             </div>
           </AnimeWrapper>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Header */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left Header Content */}
             <div className="lg:col-span-7 space-y-6">
               <AnimeWrapper animationType="fadeUp" delay={200}>
-                <h1 className="fluid-heading-xl text-white tracking-tight">
-                  Crafting <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">digital experiences</span> with precision engineering.
+                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
+                  Building <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400">scalable web applications</span> with cloud-ready architecture.
                 </h1>
               </AnimeWrapper>
 
               <AnimeWrapper animationType="fadeUp" delay={300}>
-                <p className="text-lg sm:text-2xl font-light text-slate-300 max-w-2xl leading-relaxed">
-                  Hello, I'm <strong className="text-white font-semibold">Don Bosco P</strong>. I build high-performance web applications using the MERN stack and secure AWS cloud infrastructure.
+                <p className="text-base sm:text-xl font-normal text-slate-300 max-w-2xl leading-relaxed">
+                  Hi, I'm <strong className="text-white font-semibold">Don Bosco P</strong>. I craft high-performance full-stack applications using the MERN stack and build secure, resilient cloud infrastructure on AWS.
                 </p>
               </AnimeWrapper>
 
@@ -99,7 +99,7 @@ const Home = () => {
                 <div className="pt-4 flex flex-wrap gap-4 items-center">
                   <a
                     href="#projects"
-                    className="px-8 py-4 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm tracking-wider uppercase transition-all duration-300 shadow-xl shadow-purple-600/30 hover:scale-105 cursor-pointer flex items-center space-x-2"
+                    className="px-7 py-3.5 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs tracking-wider uppercase transition-all duration-300 shadow-lg shadow-indigo-500/25 hover:scale-105 cursor-pointer flex items-center space-x-2"
                   >
                     <span>View Projects</span>
                     <ArrowUpRight className="w-4 h-4" />
@@ -107,14 +107,14 @@ const Home = () => {
 
                   <a
                     href="#contact"
-                    className="px-8 py-4 rounded-full glass-panel text-white font-semibold text-sm tracking-wider uppercase hover:bg-white/10 border border-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
+                    className="px-7 py-3.5 rounded-full glass-panel text-white font-semibold text-xs tracking-wider uppercase hover:bg-white/10 border border-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
                   >
                     Contact Me
                   </a>
 
                   <Link
                     to="/resume"
-                    className="px-6 py-4 rounded-full border border-white/10 text-slate-300 font-semibold text-sm tracking-wider uppercase hover:border-purple-500/50 hover:text-white transition-all cursor-pointer"
+                    className="px-6 py-3.5 rounded-full border border-white/10 text-slate-300 font-semibold text-xs tracking-wider uppercase hover:border-indigo-500/50 hover:text-white transition-all cursor-pointer"
                   >
                     Resume
                   </Link>
@@ -122,13 +122,16 @@ const Home = () => {
               </AnimeWrapper>
             </div>
 
-            {/* Right Profile Spotlight Card */}
-            <div className="lg:col-span-5">
+            {/* Right Profile Spotlight Card with Vercel Glow Backdrop */}
+            <div className="lg:col-span-5 relative">
+              {/* Radial Background Glow Spotlight */}
+              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-indigo-500/25 via-purple-500/20 to-cyan-500/25 blur-3xl opacity-80 pointer-events-none" />
+
               <AnimeWrapper animationType="float" delay={500}>
-                <div className="glass-card p-6 rounded-3xl border border-white/10 relative overflow-hidden group shadow-2xl">
+                <div className="bg-[#111726] p-6 rounded-3xl border border-white/10 relative overflow-hidden group shadow-2xl">
                   
-                  {/* Large Prominent Profile Photo */}
-                  <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden mb-6 border border-purple-500/30 shadow-2xl">
+                  {/* Profile Photo - Constrained Height for Viewport Fit */}
+                  <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden mb-5 border border-indigo-500/30 shadow-xl">
                     <img
                       src="/profile.jpg"
                       alt="Don Bosco P"
@@ -136,27 +139,27 @@ const Home = () => {
                     />
                     
                     {/* Live Availability Badge */}
-                    <div className="absolute top-4 left-4 glass-panel px-3.5 py-1.5 rounded-full border border-emerald-500/30 flex items-center space-x-2 shadow-lg">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs font-semibold text-white tracking-wide">Available for Work</span>
+                    <div className="absolute top-3 left-3 bg-[#090d16]/80 backdrop-blur-md px-3 py-1 rounded-full border border-emerald-500/40 flex items-center space-x-2 shadow-md">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[11px] font-semibold text-white tracking-wide">Available for Work</span>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div>
-                      <h3 className="font-editorial text-2xl sm:text-3xl font-extrabold text-white">Don Bosco P</h3>
-                      <p className="text-xs font-mono tracking-widest text-purple-400 uppercase mt-1">Full-Stack MERN & AWS Cloud Engineer</p>
+                      <h3 className="font-editorial text-2xl font-extrabold text-[#F8FAFC]">Don Bosco P</h3>
+                      <p className="text-xs font-mono tracking-widest text-indigo-400 uppercase mt-0.5">Full-Stack MERN & AWS Cloud Engineer</p>
                     </div>
 
-                    <p className="text-sm text-slate-300 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                       Passionate software engineer building resilient web apps, cloud backend systems, and interactive UI experiences.
                     </p>
 
-                    <div className="pt-4 border-t border-white/10 flex flex-wrap gap-2">
+                    <div className="pt-3 border-t border-white/10 flex flex-wrap gap-1.5">
                       {['MongoDB Atlas', 'React 19', 'Node.js', 'Express', 'Spring Boot', 'AWS EC2 & S3'].map((tech, idx) => (
                         <span
                           key={idx}
-                          className="px-3.5 py-1.5 text-xs font-semibold rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                          className="px-3 py-1 text-[11px] font-semibold rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/25"
                         >
                           {tech}
                         </span>
