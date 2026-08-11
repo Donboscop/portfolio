@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 
+import CustomCursor from './components/CustomCursor';
+
 // Import Global Layout components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -35,6 +37,7 @@ function AppContent() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <CustomCursor />
       <Navbar />
       
       {/* Spacer to push content down due to fixed navbar */}
